@@ -62,11 +62,11 @@
   .brand-mark svg{width:26px;height:26px;}
   .brand-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;letter-spacing:.2px;}
   .brand-sub{font-size:12.5px;opacity:.85;margin-top:1px;}
-  .container{max-width:1040px;margin:-26px auto 0;padding:0 20px;position:relative;z-index:2;}
+  .container{max-width:1080px;margin:-26px auto 0;padding:0 20px;position:relative;z-index:2;}
   .tabs{display:flex;gap:6px;background:#fff;border-radius:14px;padding:6px;box-shadow:0 10px 30px -12px rgba(11,32,39,.25);border:1px solid var(--line);flex-wrap:wrap;}
   .tab-btn{
-    flex:1;min-width:120px;border:none;background:transparent;padding:12px 8px;border-radius:10px;
-    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13.5px;color:var(--ink-soft);
+    flex:1;min-width:118px;border:none;background:transparent;padding:12px 8px;border-radius:10px;
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:12.8px;color:var(--ink-soft);
     cursor:pointer;transition:.15s;
   }
   .tab-btn.active{background:var(--teal-deep);color:#fff;}
@@ -95,31 +95,32 @@
   }
   input:focus, select:focus, textarea:focus{border-color:var(--cyan);background:#fff;}
   .field{margin-bottom:12px;}
-  table{width:100%;border-collapse:collapse;margin-top:6px;}
-  th{
-    font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);
-    text-align:left;padding:8px 8px;border-bottom:2px solid var(--line);font-weight:700;
-  }
-  td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle;}
-  td input, td select{padding:7px 8px;font-size:13px;}
-  .col-master{min-width:190px;}
-  .col-desc{min-width:150px;}
-  .col-num{width:80px;}
-  .col-money{width:115px;}
-  .row-remove{
-    background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:4px;
-    display:flex;align-items:center;justify-content:center;border-radius:6px;
-  }
-  .row-remove:hover{background:#FBEAE8;}
-  .add-row-btn{
-    margin-top:10px;border:1.5px dashed var(--cyan);background:var(--frost-2);color:var(--teal-deep);
-    padding:9px 14px;border-radius:9px;font-weight:600;font-size:13px;cursor:pointer;width:100%;
-  }
-  .add-row-btn:hover{background:var(--frost);}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .muted{color:var(--ink-soft);}
   .badge-jenis{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;text-transform:uppercase;letter-spacing:.03em;}
   .badge-jasa{background:var(--frost);color:var(--teal);}
   .badge-part{background:var(--purple-soft);color:var(--purple);}
   .badge-lain{background:#F1F1F1;color:var(--ink-soft);}
+
+  /* Item cards (Ruang + Tanggal per baris) */
+  .item-card{border:1.5px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;background:var(--frost-2);}
+  .item-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .item-card-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:10px;margin-bottom:8px;}
+  .item-card-grid3{display:grid;grid-template-columns:0.7fr 1fr 1fr;gap:10px;}
+  @media(max-width:640px){.item-card-grid{grid-template-columns:1fr;}.item-card-grid3{grid-template-columns:1fr 1fr 1fr;}}
+  .item-card label{font-size:10.5px;margin-bottom:3px;}
+  .item-card input, .item-card select{background:#fff;font-size:13px;padding:8px 10px;}
+  .item-card-subtotal{text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--teal-deep);margin-top:8px;font-size:13.5px;}
+  .row-remove{
+    background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:4px 8px;
+    display:flex;align-items:center;gap:4px;border-radius:6px;font-weight:600;font-size:12px;
+  }
+  .row-remove:hover{background:#FBEAE8;}
+  .add-row-btn{
+    margin-top:6px;border:1.5px dashed var(--cyan);background:var(--frost-2);color:var(--teal-deep);
+    padding:9px 14px;border-radius:9px;font-weight:600;font-size:13px;cursor:pointer;width:100%;
+  }
+  .add-row-btn:hover{background:var(--frost);}
 
   .summary-box{
     background:var(--frost-2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-top:6px;
@@ -130,15 +131,16 @@
     border-top:1.5px dashed var(--line);margin-top:6px;padding-top:10px;
     font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;color:var(--teal-deep);
   }
-  .mono{font-family:'JetBrains Mono',monospace;}
-  .muted{color:var(--ink-soft);}
 
-  .split-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);}
+  .split-group-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;color:var(--teal-deep);margin:16px 0 6px;display:flex;justify-content:space-between;align-items:center;}
+  .split-group-title:first-child{margin-top:0;}
+  .split-group-amount{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--gold);font-size:13px;}
+  .split-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);}
   .split-row:last-child{border-bottom:none;}
   .split-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
   .split-label{flex:1;font-weight:600;font-size:13.5px;}
-  .split-pct-input{width:64px;text-align:right;}
-  .split-amount{width:150px;text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;color:var(--teal-deep);}
+  .split-pct-input{width:60px;text-align:right;}
+  .split-amount{width:140px;text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13.5px;color:var(--teal-deep);}
   .pct-warning{color:var(--red);font-size:12px;font-weight:600;margin-top:8px;}
   .pct-ok{color:var(--teal);font-size:12px;font-weight:600;margin-top:8px;}
 
@@ -163,10 +165,6 @@
   .master-add-form{display:grid;grid-template-columns:110px 1fr 130px 130px 90px;gap:10px;align-items:end;margin-bottom:18px;}
   @media(max-width:760px){.master-add-form{grid-template-columns:1fr 1fr;}}
   .master-table-wrap{border:1px solid var(--line);border-radius:12px;overflow:hidden;}
-  .master-group-title{
-    background:var(--frost);padding:8px 14px;font-size:11px;font-weight:700;text-transform:uppercase;
-    letter-spacing:.04em;color:var(--teal-deep);
-  }
   .master-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);}
   .master-row:last-child{border-bottom:none;}
   .master-row .m-name{flex:1;font-weight:600;font-size:13.5px;}
@@ -194,6 +192,21 @@
   }
   .hist-actions button:hover{border-color:var(--cyan);color:var(--teal-deep);}
   .empty-state{text-align:center;padding:50px 20px;color:var(--ink-soft);}
+
+  /* Recap */
+  .recap-summary-card{border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;background:var(--frost-2);}
+  .recap-summary-card .rname{font-weight:700;font-size:14px;color:var(--teal-deep);margin-bottom:6px;}
+  .recap-summary-card .rline{display:flex;justify-content:space-between;font-size:12.8px;padding:2px 0;}
+  .recap-summary-card .rline.grand{border-top:1px dashed var(--line);margin-top:6px;padding-top:6px;font-weight:700;}
+  .recap-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;}
+  table.recap-table{width:100%;border-collapse:collapse;font-size:12px;min-width:640px;}
+  table.recap-table th{background:var(--frost);text-align:left;padding:8px 10px;font-size:10.5px;text-transform:uppercase;color:var(--ink-soft);white-space:nowrap;}
+  table.recap-table td{padding:7px 10px;border-top:1px solid var(--line);white-space:nowrap;}
+  .kpi-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+  @media(max-width:640px){.kpi-row{grid-template-columns:1fr;}}
+  .kpi-box{background:var(--frost-2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  .kpi-box .kpi-label{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;font-weight:700;}
+  .kpi-box .kpi-value{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:19px;color:var(--teal-deep);margin-top:4px;}
 
   .toast{
     position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
@@ -223,9 +236,9 @@
   .nota-body{border:1.5px solid var(--line);border-top:none;padding:22px 24px;border-radius:0 0 12px 12px;}
   .nota-meta{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:16px;}
   .nota-meta div span{display:block;color:var(--ink-soft);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;}
-  table.print-table{width:100%;border-collapse:collapse;font-size:12.5px;}
-  table.print-table th{border-bottom:1.5px solid var(--ink);padding:6px 4px;text-align:left;font-size:10.5px;text-transform:uppercase;}
-  table.print-table td{padding:7px 4px;border-bottom:1px solid var(--line);}
+  table.print-table{width:100%;border-collapse:collapse;font-size:12px;}
+  table.print-table th{border-bottom:1.5px solid var(--ink);padding:6px 4px;text-align:left;font-size:10px;text-transform:uppercase;}
+  table.print-table td{padding:6px 4px;border-bottom:1px solid var(--line);}
   .print-total-box{margin-top:14px;border-top:1.5px dashed var(--line);padding-top:10px;}
   .print-total-box .line{display:flex;justify-content:space-between;padding:3px 0;font-size:13px;}
   .print-total-box .grand{font-weight:700;font-size:16px;color:var(--teal-deep);border-top:1px solid var(--ink);margin-top:6px;padding-top:8px;}
@@ -264,6 +277,7 @@
     <button class="tab-btn active" data-tab="buat" onclick="switchTab('buat')">Buat Nota</button>
     <button class="tab-btn" data-tab="riwayat" onclick="switchTab('riwayat')">Riwayat Nota</button>
     <button class="tab-btn" data-tab="master" onclick="switchTab('master')">Master Jasa &amp; Sparepart</button>
+    <button class="tab-btn" data-tab="rekap" onclick="switchTab('rekap')">Rekap Penggajian</button>
     <button class="tab-btn" data-tab="pengaturan" onclick="switchTab('pengaturan')">Pengaturan Bagi Hasil</button>
   </div>
 
@@ -277,7 +291,7 @@
           <input type="text" id="notaId" readonly>
         </div>
         <div class="field">
-          <label>Tanggal</label>
+          <label>Tanggal Nota (penagihan)</label>
           <input type="date" id="notaTanggal">
         </div>
         <div class="field">
@@ -300,38 +314,25 @@
         </div>
       </div>
       <div class="field">
-        <label>Alamat / Lokasi Pekerjaan</label>
-        <input type="text" id="custAlamat" placeholder="Alamat lengkap lokasi service">
+        <label>Alamat / Lokasi Utama</label>
+        <input type="text" id="custAlamat" placeholder="Alamat lengkap pelanggan">
       </div>
     </div>
 
     <div class="card">
       <h2><span class="num">2</span> Rincian Jasa &amp; Sparepart</h2>
-      <p class="hint">Pilih dari master untuk mengisi otomatis harga modal &amp; jual, atau pilih "Input Manual" untuk item baru yang belum ada di master.</p>
-      <table id="itemsTable">
-        <thead>
-          <tr>
-            <th class="col-master">Pilih Item</th>
-            <th class="col-desc">Deskripsi</th>
-            <th class="col-num">Qty</th>
-            <th class="col-money">Modal / unit</th>
-            <th class="col-money">Harga Jual / unit</th>
-            <th class="col-money">Subtotal</th>
-            <th style="width:34px"></th>
-          </tr>
-        </thead>
-        <tbody id="itemsBody"></tbody>
-      </table>
-      <button class="add-row-btn" onclick="addItem()">+ Tambah Baris</button>
+      <p class="hint">Setiap baris bisa punya <strong>ruang/lokasi</strong> dan <strong>tanggal perbaikan</strong> sendiri — cocok untuk 1 nota yang mencakup beberapa ruangan/hari berbeda. Pilih dari master untuk mengisi otomatis harga, atau pakai "Input Manual".</p>
+      <div id="itemsBody"></div>
+      <button class="add-row-btn" onclick="addItem()">+ Tambah Baris Pekerjaan</button>
     </div>
 
     <div class="card">
       <h2><span class="num">3</span> Transportasi</h2>
-      <p class="hint">Isi jika ada biaya transport ke lokasi pelanggan. Biaya jual akan masuk ke total tagihan, biaya modal (bensin/ongkos) mengurangi profit.</p>
+      <p class="hint">Isi jika ada biaya transport ke lokasi pelanggan. Dihitung sebagai bagian dari kelompok Jasa.</p>
       <div class="grid3">
         <div class="field">
           <label>Keterangan Transport</label>
-          <input type="text" id="transKet" placeholder="cth: Transport luar kota / antar sparepart" value="Biaya Transportasi">
+          <input type="text" id="transKet" placeholder="cth: Transport luar kota" value="Biaya Transportasi">
         </div>
         <div class="field">
           <label>Biaya Modal Transport (Rp)</label>
@@ -363,20 +364,26 @@
         </div>
       </div>
       <div class="summary-box">
-        <div class="summary-line"><span class="muted">Subtotal Jasa &amp; Sparepart (Jual)</span><span class="mono" id="sumItemsJual">Rp 0</span></div>
-        <div class="summary-line"><span class="muted">Biaya Transport (Jual)</span><span class="mono" id="sumTransJual">Rp 0</span></div>
+        <div class="summary-line"><span class="muted">Subtotal Jual — Jasa (+Transport)</span><span class="mono" id="sumJasaJual">Rp 0</span></div>
+        <div class="summary-line"><span class="muted">Subtotal Jual — Sparepart</span><span class="mono" id="sumPartJual">Rp 0</span></div>
         <div class="summary-line"><span class="muted">Diskon</span><span class="mono" id="sumDiskon">– Rp 0</span></div>
         <div class="summary-line total"><span>Total Tagihan Pelanggan</span><span class="mono" id="sumTagihan">Rp 0</span></div>
-        <div class="summary-line sub" style="margin-top:10px;"><span class="muted">Modal Jasa &amp; Sparepart</span><span class="mono" id="sumItemsModal">Rp 0</span></div>
-        <div class="summary-line sub"><span class="muted">Modal Transport</span><span class="mono" id="sumTransModal">Rp 0</span></div>
+        <div class="summary-line sub" style="margin-top:10px;"><span class="muted">Modal Jasa (+Transport)</span><span class="mono" id="sumJasaModal">Rp 0</span></div>
+        <div class="summary-line sub"><span class="muted">Modal Sparepart</span><span class="mono" id="sumPartModal">Rp 0</span></div>
         <div class="summary-line"><span class="muted">Total Modal</span><span class="mono" id="sumModal">Rp 0</span></div>
-        <div class="summary-line" style="margin-top:6px;"><span class="muted">Estimasi Profit (sebelum bagi hasil)</span><span class="mono" id="sumProfit" style="color:var(--gold);font-weight:700;">Rp 0</span></div>
+        <div class="summary-line" style="margin-top:8px;"><span class="muted">Profit Jasa</span><span class="mono" id="sumProfitJasa" style="color:var(--gold);font-weight:700;">Rp 0</span></div>
+        <div class="summary-line"><span class="muted">Profit Sparepart</span><span class="mono" id="sumProfitPart" style="color:var(--gold);font-weight:700;">Rp 0</span></div>
+        <div class="summary-line total" style="border-top:1.5px dashed var(--line);"><span>Total Profit</span><span class="mono" id="sumProfit">Rp 0</span></div>
       </div>
     </div>
 
     <div class="card">
       <h2><span class="num">5</span> Pembagian Profit</h2>
-      <div id="splitContainer"></div>
+      <p class="hint">Persentase Jasa dan Sparepart dihitung terpisah, karena marginnya beda karakter.</p>
+      <div class="split-group-title">Bagi Hasil — Profit Jasa <span class="split-group-amount" id="jasaProfitLabel">Rp 0</span></div>
+      <div id="splitJasaContainer"></div>
+      <div class="split-group-title">Bagi Hasil — Profit Sparepart <span class="split-group-amount" id="partProfitLabel">Rp 0</span></div>
+      <div id="splitPartContainer"></div>
       <div id="pctStatus"></div>
     </div>
 
@@ -436,24 +443,46 @@
     </div>
   </div>
 
+  <!-- TAB: REKAP PENGGAJIAN -->
+  <div id="tab-rekap" style="display:none;">
+    <div class="card">
+      <h2><span class="num">📅</span> Filter Periode</h2>
+      <p class="hint">Rekap dihitung berdasarkan <strong>tanggal perbaikan per ruang/lokasi</strong> (bukan tanggal nota dibuat) — jadi 1 nota dengan beberapa ruang/tanggal akan terbagi otomatis sesuai tanggal kerjanya masing-masing.</p>
+      <div class="grid3">
+        <div class="field">
+          <label>Dari Tanggal</label>
+          <input type="date" id="rekapDari">
+        </div>
+        <div class="field">
+          <label>Sampai Tanggal</label>
+          <input type="date" id="rekapSampai">
+        </div>
+        <div class="field">
+          <label>Filter Mekanik (opsional)</label>
+          <input type="text" id="rekapMekanikFilter" placeholder="Kosongkan untuk semua mekanik">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="loadRekap()">🔍 Tampilkan Rekap</button>
+    </div>
+    <div id="rekapResult"></div>
+  </div>
+
   <!-- TAB: PENGATURAN -->
   <div id="tab-pengaturan" style="display:none;">
     <div class="card">
       <h2><span class="num">%</span> Persentase Default Bagi Hasil</h2>
-      <p class="hint">Persentase ini akan otomatis dipakai setiap kali membuat nota baru. Bisa diubah lagi per-nota bila perlu.</p>
+      <p class="hint">Dipakai otomatis setiap kali membuat nota baru. Bisa diubah lagi per-nota bila perlu. Jasa dan Sparepart punya persentase sendiri-sendiri.</p>
+      <div class="split-group-title">Bagi Hasil Jasa</div>
       <div class="grid3">
-        <div class="field">
-          <label>Pemilik Usaha (%)</label>
-          <input type="number" id="defOwner" value="40" min="0" max="100">
-        </div>
-        <div class="field">
-          <label>Mekanik AC (%)</label>
-          <input type="number" id="defMekanik" value="40" min="0" max="100">
-        </div>
-        <div class="field">
-          <label>Helper (%)</label>
-          <input type="number" id="defHelper" value="20" min="0" max="100">
-        </div>
+        <div class="field"><label>Pemilik Usaha (%)</label><input type="number" id="defJasaOwner" value="40" min="0" max="100"></div>
+        <div class="field"><label>Mekanik AC (%)</label><input type="number" id="defJasaMekanik" value="40" min="0" max="100"></div>
+        <div class="field"><label>Helper (%)</label><input type="number" id="defJasaHelper" value="20" min="0" max="100"></div>
+      </div>
+      <div class="split-group-title">Bagi Hasil Sparepart</div>
+      <div class="grid3">
+        <div class="field"><label>Pemilik Usaha (%)</label><input type="number" id="defPartOwner" value="70" min="0" max="100"></div>
+        <div class="field"><label>Mekanik AC (%)</label><input type="number" id="defPartMekanik" value="20" min="0" max="100"></div>
+        <div class="field"><label>Helper (%)</label><input type="number" id="defPartHelper" value="10" min="0" max="100"></div>
       </div>
       <button class="btn btn-primary" onclick="saveDefaults()">Simpan Pengaturan Default</button>
     </div>
@@ -491,7 +520,8 @@ async function apiPost(action, payload){
 
 let items = [];
 let itemSeq = 0;
-let currentSplit = { owner: 40, mekanik: 40, helper: 20 };
+let currentSplitJasa = { owner: 40, mekanik: 40, helper: 20 };
+let currentSplitPart = { owner: 70, mekanik: 20, helper: 10 };
 let masterItems = []; // {id, jenis, nama, modal, jual}
 let editingId = null;
 
@@ -509,7 +539,7 @@ function showToast(msg){
 }
 
 function switchTab(name){
-  ['buat','riwayat','master','pengaturan'].forEach(t=>{
+  ['buat','riwayat','master','rekap','pengaturan'].forEach(t=>{
     document.getElementById('tab-'+t).style.display = (t===name)?'block':'none';
   });
   document.querySelectorAll('.tab-btn').forEach(b=>{
@@ -625,11 +655,14 @@ function masterOptionsHtml(selectedId){
   return html;
 }
 
-/* ---------- ITEM ROWS ---------- */
+/* ---------- ITEM ROWS (Ruang + Tanggal per baris) ---------- */
 
 function addItem(prefill){
   const id = 'it' + (itemSeq++);
-  items.push(prefill ? {...prefill, id} : {id, masterId:'', jenis:'Jasa', desc:'', qty:1, modal:0, jual:0});
+  items.push(prefill ? {...prefill, id} : {
+    id, masterId:'', jenis:'Jasa', desc:'', ruang:'', tanggalKerja: todayISO(),
+    qty:1, modal:0, jual:0
+  });
   renderItems();
 }
 function removeItem(id){
@@ -654,66 +687,115 @@ function updateItem(id, field, val){
 function renderItems(){
   const body = document.getElementById('itemsBody');
   body.innerHTML = '';
-  items.forEach(it=>{
-    const tr = document.createElement('tr');
+  items.forEach((it, idx)=>{
     const subtotal = it.qty * it.jual;
     const badgeClass = it.jenis==='Jasa' ? 'badge-jasa' : (it.jenis==='Sparepart' ? 'badge-part' : 'badge-lain');
-    tr.innerHTML = `
-      <td class="col-master">
-        <select onchange="updateItem('${it.id}','masterId',this.value)">
-          ${masterOptionsHtml(it.masterId)}
-        </select>
-      </td>
-      <td class="col-desc">
-        <span class="badge-jenis ${badgeClass}" style="display:block;width:fit-content;margin-bottom:4px;">${it.jenis}</span>
-        <input type="text" value="${escapeHtml(it.desc)}" placeholder="Deskripsi item" onchange="updateItem('${it.id}','desc',this.value)">
-      </td>
-      <td class="col-num"><input type="number" min="0" value="${it.qty}" onchange="updateItem('${it.id}','qty',this.value)"></td>
-      <td class="col-money"><input type="number" min="0" value="${it.modal}" onchange="updateItem('${it.id}','modal',this.value)"></td>
-      <td class="col-money"><input type="number" min="0" value="${it.jual}" onchange="updateItem('${it.id}','jual',this.value)"></td>
-      <td class="col-money mono">${fmt(subtotal)}</td>
-      <td><button class="row-remove" onclick="removeItem('${it.id}')">✕</button></td>
+    const div = document.createElement('div');
+    div.className = 'item-card';
+    div.innerHTML = `
+      <div class="item-card-top">
+        <span class="badge-jenis ${badgeClass}">${it.jenis} · Baris ${idx+1}</span>
+        <button class="row-remove" onclick="removeItem('${it.id}')">✕ Hapus</button>
+      </div>
+      <div class="item-card-grid">
+        <div class="field" style="margin-bottom:0;">
+          <label>Pilih dari Master</label>
+          <select onchange="updateItem('${it.id}','masterId',this.value)">${masterOptionsHtml(it.masterId)}</select>
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>Deskripsi</label>
+          <input type="text" value="${escapeHtml(it.desc)}" placeholder="Deskripsi pekerjaan" onchange="updateItem('${it.id}','desc',this.value)">
+        </div>
+      </div>
+      <div class="item-card-grid">
+        <div class="field" style="margin-bottom:0;">
+          <label>Ruang / Lokasi</label>
+          <input type="text" value="${escapeHtml(it.ruang)}" placeholder="cth: Ruang Server, Kamar 2, Lobby" onchange="updateItem('${it.id}','ruang',this.value)">
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>Tanggal Perbaikan</label>
+          <input type="date" value="${it.tanggalKerja||''}" onchange="updateItem('${it.id}','tanggalKerja',this.value)">
+        </div>
+      </div>
+      <div class="item-card-grid3">
+        <div class="field" style="margin-bottom:0;">
+          <label>Qty</label>
+          <input type="number" min="0" value="${it.qty}" onchange="updateItem('${it.id}','qty',this.value)">
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>Modal/unit</label>
+          <input type="number" min="0" value="${it.modal}" onchange="updateItem('${it.id}','modal',this.value)">
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>Jual/unit</label>
+          <input type="number" min="0" value="${it.jual}" onchange="updateItem('${it.id}','jual',this.value)">
+        </div>
+      </div>
+      <div class="item-card-subtotal">Subtotal: ${fmt(subtotal)}</div>
     `;
-    body.appendChild(tr);
+    body.appendChild(div);
   });
   recalc();
 }
 
-/* ---------- TOTALS ---------- */
+/* ---------- TOTALS (Jasa vs Sparepart terpisah) ---------- */
 
 function calcTotals(){
-  let itemsModal=0, itemsJual=0;
-  items.forEach(it=>{ itemsModal += it.qty*it.modal; itemsJual += it.qty*it.jual; });
+  let jasaModal=0, jasaJual=0, partModal=0, partJual=0;
+  items.forEach(it=>{
+    const m = it.qty*it.modal, j = it.qty*it.jual;
+    if(it.jenis==='Sparepart'){ partModal+=m; partJual+=j; }
+    else { jasaModal+=m; jasaJual+=j; } // Jasa & Lainnya masuk kelompok Jasa
+  });
   const transModal = Number(document.getElementById('transModal').value)||0;
   const transJual = Number(document.getElementById('transJual').value)||0;
+  jasaModal += transModal; jasaJual += transJual;
 
-  const totalModal = itemsModal + transModal;
-  const grossJual = itemsJual + transJual;
+  const totalModal = jasaModal + partModal;
+  const grossJual = jasaJual + partJual;
 
   const diskonTipe = document.getElementById('diskonTipe').value;
   const diskonNilai = Number(document.getElementById('diskonNilai').value)||0;
   const diskon = diskonTipe === 'persen' ? Math.round(grossJual * diskonNilai / 100) : diskonNilai;
 
-  const tagihan = grossJual - diskon;
-  const profit = tagihan - totalModal;
-  return {itemsModal, itemsJual, transModal, transJual, totalModal, grossJual, diskon, tagihan, profit};
+  // alokasikan diskon proporsional antara kelompok jasa & sparepart
+  const diskonJasa = grossJual>0 ? Math.round(diskon * (jasaJual/grossJual)) : diskon;
+  const diskonPart = diskon - diskonJasa;
+
+  const tagihanJasa = jasaJual - diskonJasa;
+  const tagihanPart = partJual - diskonPart;
+  const tagihan = tagihanJasa + tagihanPart;
+
+  const profitJasa = tagihanJasa - jasaModal;
+  const profitPart = tagihanPart - partModal;
+  const profit = profitJasa + profitPart;
+
+  return {
+    jasaModal, jasaJual, partModal, partJual, transModal, transJual,
+    totalModal, grossJual, diskon, diskonJasa, diskonPart,
+    tagihanJasa, tagihanPart, tagihan, profitJasa, profitPart, profit
+  };
 }
 
 function recalc(){
   const t = calcTotals();
-  document.getElementById('sumItemsJual').textContent = fmt(t.itemsJual);
-  document.getElementById('sumTransJual').textContent = fmt(t.transJual);
+  document.getElementById('sumJasaJual').textContent = fmt(t.jasaJual);
+  document.getElementById('sumPartJual').textContent = fmt(t.partJual);
   document.getElementById('sumDiskon').textContent = '– ' + fmt(t.diskon);
   document.getElementById('sumTagihan').textContent = fmt(t.tagihan);
-  document.getElementById('sumItemsModal').textContent = fmt(t.itemsModal);
-  document.getElementById('sumTransModal').textContent = fmt(t.transModal);
+  document.getElementById('sumJasaModal').textContent = fmt(t.jasaModal);
+  document.getElementById('sumPartModal').textContent = fmt(t.partModal);
   document.getElementById('sumModal').textContent = fmt(t.totalModal);
+  document.getElementById('sumProfitJasa').textContent = fmt(t.profitJasa);
+  document.getElementById('sumProfitPart').textContent = fmt(t.profitPart);
   document.getElementById('sumProfit').textContent = fmt(t.profit);
-  renderSplit(t.profit);
+  document.getElementById('jasaProfitLabel').textContent = fmt(t.profitJasa);
+  document.getElementById('partProfitLabel').textContent = fmt(t.profitPart);
+  renderSplit(t.profitJasa, t.profitPart);
 }
 
-function renderSplit(profit){
-  const c = document.getElementById('splitContainer');
+function renderSplitGroup(containerId, profit, splitObj){
+  const c = document.getElementById(containerId);
   const roles = [
     {key:'owner', label:'Pemilik Usaha', color:'#0E7C86'},
     {key:'mekanik', label:'Jasa Mekanik AC', color:'#00B4C6'},
@@ -723,20 +805,28 @@ function renderSplit(profit){
     <div class="split-row">
       <span class="split-dot" style="background:${r.color}"></span>
       <span class="split-label">${r.label}</span>
-      <input type="number" class="split-pct-input" min="0" max="100" value="${currentSplit[r.key]}" onchange="updateSplit('${r.key}', this.value)"> %
-      <span class="split-amount">${fmt((profit||0) * currentSplit[r.key] / 100)}</span>
+      <input type="number" class="split-pct-input" min="0" max="100" value="${splitObj[r.key]}" onchange="updateSplit('${containerId}','${r.key}', this.value)"> %
+      <span class="split-amount">${fmt((profit||0) * splitObj[r.key] / 100)}</span>
     </div>
   `).join('');
-  const total = currentSplit.owner + currentSplit.mekanik + currentSplit.helper;
-  const status = document.getElementById('pctStatus');
-  if(total !== 100){
-    status.innerHTML = `<div class="pct-warning">⚠ Total persentase saat ini ${total}% — sebaiknya tepat 100% agar seluruh profit terbagi habis.</div>`;
-  } else {
-    status.innerHTML = `<div class="pct-ok">✓ Total 100% — profit terbagi habis.</div>`;
-  }
 }
-function updateSplit(key, val){
-  currentSplit[key] = Number(val)||0;
+
+function renderSplit(profitJasa, profitPart){
+  renderSplitGroup('splitJasaContainer', profitJasa, currentSplitJasa);
+  renderSplitGroup('splitPartContainer', profitPart, currentSplitPart);
+  const totalJasa = currentSplitJasa.owner + currentSplitJasa.mekanik + currentSplitJasa.helper;
+  const totalPart = currentSplitPart.owner + currentSplitPart.mekanik + currentSplitPart.helper;
+  const status = document.getElementById('pctStatus');
+  let msgs = [];
+  if(totalJasa !== 100) msgs.push(`⚠ Total persentase Jasa saat ini ${totalJasa}% (idealnya 100%)`);
+  if(totalPart !== 100) msgs.push(`⚠ Total persentase Sparepart saat ini ${totalPart}% (idealnya 100%)`);
+  status.innerHTML = msgs.length
+    ? msgs.map(m=>`<div class="pct-warning">${m}</div>`).join('')
+    : `<div class="pct-ok">✓ Persentase Jasa & Sparepart masing-masing sudah 100%.</div>`;
+}
+function updateSplit(containerId, key, val){
+  const target = containerId==='splitJasaContainer' ? currentSplitJasa : currentSplitPart;
+  target[key] = Number(val)||0;
   recalc();
 }
 
@@ -766,17 +856,26 @@ function resetForm(newNota){
   document.getElementById('diskonTipe').value = 'rp';
   document.getElementById('diskonNilai').value = 0;
   document.getElementById('catatan').value = '';
-  addItem({masterId:'', jenis:'Jasa', desc:'Jasa Cuci / Service AC', qty:1, modal:0, jual:0});
+  addItem({masterId:'', jenis:'Jasa', desc:'Jasa Cuci / Service AC', ruang:'', tanggalKerja:todayISO(), qty:1, modal:0, jual:0});
 }
 
 async function saveDefaults(){
-  const owner = Number(document.getElementById('defOwner').value)||0;
-  const mekanik = Number(document.getElementById('defMekanik').value)||0;
-  const helper = Number(document.getElementById('defHelper').value)||0;
-  const defaults = {owner, mekanik, helper};
+  const defaults = {
+    jasa: {
+      owner: Number(document.getElementById('defJasaOwner').value)||0,
+      mekanik: Number(document.getElementById('defJasaMekanik').value)||0,
+      helper: Number(document.getElementById('defJasaHelper').value)||0,
+    },
+    part: {
+      owner: Number(document.getElementById('defPartOwner').value)||0,
+      mekanik: Number(document.getElementById('defPartMekanik').value)||0,
+      helper: Number(document.getElementById('defPartHelper').value)||0,
+    }
+  };
   try{
     await apiPost('saveDefaults', {data:defaults});
-    currentSplit = {...defaults};
+    currentSplitJasa = {...defaults.jasa};
+    currentSplitPart = {...defaults.part};
     recalc();
     showToast('Pengaturan default bagi hasil tersimpan');
   }catch(e){ showToast('Gagal menyimpan pengaturan ke spreadsheet'); }
@@ -785,13 +884,17 @@ async function saveDefaults(){
 async function loadDefaults(){
   try{
     const d = await apiGet('getDefaults');
-    if(d && !d.error){
-      currentSplit = d;
-      document.getElementById('defOwner').value = d.owner;
-      document.getElementById('defMekanik').value = d.mekanik;
-      document.getElementById('defHelper').value = d.helper;
+    if(d && !d.error && d.jasa && d.part){
+      currentSplitJasa = d.jasa;
+      currentSplitPart = d.part;
+      document.getElementById('defJasaOwner').value = d.jasa.owner;
+      document.getElementById('defJasaMekanik').value = d.jasa.mekanik;
+      document.getElementById('defJasaHelper').value = d.jasa.helper;
+      document.getElementById('defPartOwner').value = d.part.owner;
+      document.getElementById('defPartMekanik').value = d.part.mekanik;
+      document.getElementById('defPartHelper').value = d.part.helper;
     }
-  }catch(e){ /* no defaults yet, keep built-in default */ }
+  }catch(e){ /* pakai default bawaan */ }
 }
 
 function buildNotaObject(){
@@ -812,7 +915,7 @@ function buildNotaObject(){
     diskonTipe: document.getElementById('diskonTipe').value,
     diskonNilai: Number(document.getElementById('diskonNilai').value)||0,
     totals: t,
-    split: {...currentSplit},
+    split: { jasa: {...currentSplitJasa}, part: {...currentSplitPart} },
     savedAt: new Date().toISOString(),
   };
 }
@@ -866,7 +969,10 @@ async function openNota(id){
   try{
     const n = await apiGet('getNota', {id});
     if(!n || n.error){ showToast('Nota tidak ditemukan'); return; }
-    items = (n.items||[]).map(it=>({...it, id: 'it'+(itemSeq++)}));
+    items = (n.items||[]).map(it=>({
+      ...it, id: 'it'+(itemSeq++),
+      ruang: it.ruang || '', tanggalKerja: it.tanggalKerja || n.tanggal || todayISO()
+    }));
     document.getElementById('notaId').value = n.id;
     document.getElementById('notaTanggal').value = n.tanggal;
     document.getElementById('mekanikNama').value = n.mekanik||'';
@@ -880,7 +986,14 @@ async function openNota(id){
     document.getElementById('diskonTipe').value = n.diskonTipe||'rp';
     document.getElementById('diskonNilai').value = n.diskonNilai||0;
     document.getElementById('catatan').value = n.catatan||'';
-    currentSplit = n.split || currentSplit;
+    // dukung nota lama (format split flat {owner,mekanik,helper}) maupun baru ({jasa:{},part:{}})
+    if(n.split && n.split.jasa && n.split.part){
+      currentSplitJasa = n.split.jasa;
+      currentSplitPart = n.split.part;
+    } else if(n.split && typeof n.split.owner === 'number'){
+      currentSplitJasa = {...n.split};
+      currentSplitPart = {...n.split};
+    }
     editingId = n.id;
     renderItems();
     switchTab('buat');
@@ -897,6 +1010,175 @@ async function deleteNota(id){
   }catch(e){ showToast('Gagal menghapus nota di spreadsheet'); }
 }
 
+/* ---------- REKAP PENGGAJIAN ---------- */
+
+function splitOf(nota){
+  if(nota.split && nota.split.jasa && nota.split.part) return nota.split;
+  if(nota.split && typeof nota.split.owner === 'number') return {jasa:nota.split, part:nota.split};
+  return {jasa:{owner:40,mekanik:40,helper:20}, part:{owner:70,mekanik:20,helper:10}};
+}
+
+async function loadRekap(){
+  const dari = document.getElementById('rekapDari').value;
+  const sampai = document.getElementById('rekapSampai').value;
+  const mekanikFilter = document.getElementById('rekapMekanikFilter').value.trim().toLowerCase();
+  const resultEl = document.getElementById('rekapResult');
+  if(!dari || !sampai){ showToast('Isi Dari Tanggal dan Sampai Tanggal dulu'); return; }
+  resultEl.innerHTML = `<div class="card"><div class="muted">Memuat data dari spreadsheet…</div></div>`;
+
+  let notaList = [];
+  try{
+    const res = await apiGet('getAllNotaFull');
+    if(Array.isArray(res)) notaList = res;
+  }catch(e){ resultEl.innerHTML = `<div class="card"><div class="muted">Gagal memuat data.</div></div>`; return; }
+
+  const byMekanik = {}; // nama -> {jasaProfit, jasaShare, partProfit, partShare, jumlahItem}
+  const byHelper = {};
+  let totalJasaProfitPeriode = 0, totalPartProfitPeriode = 0;
+  const detailRows = [];
+
+  function bump(map, nama, field, val){
+    if(!nama) return;
+    if(!map[nama]) map[nama] = {jasaProfit:0, jasaShare:0, partProfit:0, partShare:0, jumlahItem:0};
+    map[nama][field] += val;
+  }
+
+  notaList.forEach(nota=>{
+    const split = splitOf(nota);
+    const mekanikNama = nota.mekanik || '(tanpa nama)';
+    const helperNama = nota.helper || '';
+    (nota.items||[]).forEach(it=>{
+      const tgl = it.tanggalKerja || nota.tanggal;
+      if(!tgl || tgl < dari || tgl > sampai) return;
+      if(mekanikFilter && mekanikNama.toLowerCase().indexOf(mekanikFilter) === -1) return;
+
+      const profit = (Number(it.qty)||0) * ((Number(it.jual)||0) - (Number(it.modal)||0));
+      const isPart = it.jenis === 'Sparepart';
+      const sp = isPart ? split.part : split.jasa;
+
+      const mekShare = profit * (sp.mekanik||0) / 100;
+      const helpShare = profit * (sp.helper||0) / 100;
+
+      if(isPart){
+        bump(byMekanik, mekanikNama, 'partProfit', profit);
+        bump(byMekanik, mekanikNama, 'partShare', mekShare);
+        if(helperNama){ bump(byHelper, helperNama, 'partProfit', profit); bump(byHelper, helperNama, 'partShare', helpShare); }
+        totalPartProfitPeriode += profit;
+      } else {
+        bump(byMekanik, mekanikNama, 'jasaProfit', profit);
+        bump(byMekanik, mekanikNama, 'jasaShare', mekShare);
+        if(helperNama){ bump(byHelper, helperNama, 'jasaProfit', profit); bump(byHelper, helperNama, 'jasaShare', helpShare); }
+        totalJasaProfitPeriode += profit;
+      }
+      bump(byMekanik, mekanikNama, 'jumlahItem', 1);
+
+      detailRows.push({
+        tanggal: tgl, ruang: it.ruang||'-', notaId: nota.id, cust: nota.custNama,
+        jenis: it.jenis, desc: it.desc, profit, mekanik: mekanikNama, mekShare,
+        helper: helperNama, helpShare
+      });
+    });
+
+    // transport: atribusi pakai tanggal nota
+    const tglTrans = nota.tanggal;
+    if(tglTrans && tglTrans >= dari && tglTrans <= sampai && (!mekanikFilter || mekanikNama.toLowerCase().indexOf(mekanikFilter) !== -1)){
+      const transProfit = (Number(nota.transJual)||0) - (Number(nota.transModal)||0);
+      if(transProfit){
+        const sp = split.jasa;
+        const mekShare = transProfit * (sp.mekanik||0)/100;
+        const helpShare = transProfit * (sp.helper||0)/100;
+        bump(byMekanik, mekanikNama, 'jasaProfit', transProfit);
+        bump(byMekanik, mekanikNama, 'jasaShare', mekShare);
+        if(helperNama){ bump(byHelper, helperNama, 'jasaProfit', transProfit); bump(byHelper, helperNama, 'jasaShare', helpShare); }
+        totalJasaProfitPeriode += transProfit;
+        detailRows.push({
+          tanggal: tglTrans, ruang:'—', notaId: nota.id, cust: nota.custNama,
+          jenis:'Transport', desc: nota.transKet||'Transport', profit: transProfit,
+          mekanik: mekanikNama, mekShare, helper: helperNama, helpShare
+        });
+      }
+    }
+  });
+
+  detailRows.sort((a,b)=> a.tanggal < b.tanggal ? -1 : (a.tanggal>b.tanggal?1:0));
+
+  renderRekapResult({byMekanik, byHelper, totalJasaProfitPeriode, totalPartProfitPeriode, detailRows, dari, sampai});
+}
+
+function renderRekapResult(d){
+  const resultEl = document.getElementById('rekapResult');
+  const mekanikNames = Object.keys(d.byMekanik);
+  const helperNames = Object.keys(d.byHelper);
+
+  if(mekanikNames.length===0 && helperNames.length===0){
+    resultEl.innerHTML = `<div class="card"><div class="empty-state">Tidak ada pekerjaan pada rentang tanggal ini.</div></div>`;
+    return;
+  }
+
+  const totalMekanikPayout = mekanikNames.reduce((s,n)=> s + d.byMekanik[n].jasaShare + d.byMekanik[n].partShare, 0);
+  const totalHelperPayout = helperNames.reduce((s,n)=> s + d.byHelper[n].jasaShare + d.byHelper[n].partShare, 0);
+
+  let html = `<div class="card">
+    <h2><span class="num">Σ</span> Ringkasan Periode ${d.dari} s/d ${d.sampai}</h2>
+    <div class="kpi-row">
+      <div class="kpi-box"><div class="kpi-label">Total Profit Jasa</div><div class="kpi-value">${fmt(d.totalJasaProfitPeriode)}</div></div>
+      <div class="kpi-box"><div class="kpi-label">Total Profit Sparepart</div><div class="kpi-value">${fmt(d.totalPartProfitPeriode)}</div></div>
+      <div class="kpi-box"><div class="kpi-label">Total Dibayarkan ke Mekanik</div><div class="kpi-value">${fmt(totalMekanikPayout)}</div></div>
+      <div class="kpi-box"><div class="kpi-label">Total Dibayarkan ke Helper</div><div class="kpi-value">${fmt(totalHelperPayout)}</div></div>
+    </div>
+  </div>`;
+
+  html += `<div class="card"><h2><span class="num">👷</span> Rekap Penggajian Mekanik</h2>`;
+  if(mekanikNames.length===0){
+    html += `<div class="empty-state">Tidak ada data mekanik pada periode ini.</div>`;
+  } else {
+    mekanikNames.forEach(nama=>{
+      const r = d.byMekanik[nama];
+      html += `<div class="recap-summary-card">
+        <div class="rname">${escapeHtml(nama)} <span class="muted" style="font-weight:400;font-size:12px;">(${r.jumlahItem} pekerjaan)</span></div>
+        <div class="rline"><span class="muted">Profit Jasa dikerjakan</span><span class="mono">${fmt(r.jasaProfit)}</span></div>
+        <div class="rline"><span class="muted">Bagian dari Jasa</span><span class="mono">${fmt(r.jasaShare)}</span></div>
+        <div class="rline"><span class="muted">Profit Sparepart terkait</span><span class="mono">${fmt(r.partProfit)}</span></div>
+        <div class="rline"><span class="muted">Bagian dari Sparepart</span><span class="mono">${fmt(r.partShare)}</span></div>
+        <div class="rline grand"><span>Total Diterima</span><span class="mono">${fmt(r.jasaShare + r.partShare)}</span></div>
+      </div>`;
+    });
+  }
+  html += `</div>`;
+
+  html += `<div class="card"><h2><span class="num">🧰</span> Rekap Penggajian Helper</h2>`;
+  if(helperNames.length===0){
+    html += `<div class="empty-state">Tidak ada data helper pada periode ini.</div>`;
+  } else {
+    helperNames.forEach(nama=>{
+      const r = d.byHelper[nama];
+      html += `<div class="recap-summary-card">
+        <div class="rname">${escapeHtml(nama)}</div>
+        <div class="rline"><span class="muted">Bagian dari Jasa</span><span class="mono">${fmt(r.jasaShare)}</span></div>
+        <div class="rline"><span class="muted">Bagian dari Sparepart</span><span class="mono">${fmt(r.partShare)}</span></div>
+        <div class="rline grand"><span>Total Diterima</span><span class="mono">${fmt(r.jasaShare + r.partShare)}</span></div>
+      </div>`;
+    });
+  }
+  html += `</div>`;
+
+  html += `<div class="card"><h2><span class="num">📋</span> Detail Per Ruang / Pekerjaan</h2>
+    <div class="recap-table-wrap"><table class="recap-table">
+      <thead><tr><th>Tanggal</th><th>Ruang/Lokasi</th><th>No. Nota</th><th>Pelanggan</th><th>Jenis</th><th>Deskripsi</th><th>Profit</th><th>Mekanik</th><th>Bag. Mekanik</th><th>Helper</th><th>Bag. Helper</th></tr></thead>
+      <tbody>`;
+  d.detailRows.forEach(r=>{
+    html += `<tr>
+      <td>${r.tanggal}</td><td>${escapeHtml(r.ruang)}</td><td class="mono">${r.notaId}</td><td>${escapeHtml(r.cust||'')}</td>
+      <td>${r.jenis}</td><td>${escapeHtml(r.desc||'')}</td><td class="mono">${fmt(r.profit)}</td>
+      <td>${escapeHtml(r.mekanik)}</td><td class="mono">${fmt(r.mekShare)}</td>
+      <td>${escapeHtml(r.helper||'-')}</td><td class="mono">${r.helper?fmt(r.helpShare):'-'}</td>
+    </tr>`;
+  });
+  html += `</tbody></table></div></div>`;
+
+  resultEl.innerHTML = html;
+}
+
 /* ---------- PRINT ---------- */
 
 function printCustomer(){
@@ -904,7 +1186,7 @@ function printCustomer(){
   if(items.length===0){ showToast('Tambahkan item terlebih dahulu'); return; }
   const rows = items.map(it=>`
     <tr>
-      <td>${escapeHtml(it.desc)} <span class="muted" style="font-size:10.5px;">(${it.jenis})</span></td>
+      <td>${escapeHtml(it.desc)}<br><span class="muted" style="font-size:10px;">${escapeHtml(it.ruang||'')}${it.ruang&&it.tanggalKerja?' · ':''}${it.tanggalKerja||''}</span></td>
       <td style="text-align:center;">${it.qty}</td>
       <td style="text-align:right;">${fmt(it.jual)}</td>
       <td style="text-align:right;">${fmt(it.qty*it.jual)}</td>
@@ -933,14 +1215,14 @@ function printCustomer(){
       <div class="nota-body">
         <div class="nota-meta">
           <div><span>Pelanggan</span>${escapeHtml(n.custNama)}</div>
-          <div><span>Tanggal</span>${n.tanggal}</div>
+          <div><span>Tanggal Nota</span>${n.tanggal}</div>
         </div>
         <div class="nota-meta">
           <div><span>Alamat</span>${escapeHtml(n.custAlamat)||'-'}</div>
           <div><span>No. HP</span>${escapeHtml(n.custHp)||'-'}</div>
         </div>
         <table class="print-table">
-          <thead><tr><th>Deskripsi</th><th style="text-align:center;">Qty</th><th style="text-align:right;">Harga</th><th style="text-align:right;">Subtotal</th></tr></thead>
+          <thead><tr><th>Deskripsi / Ruang / Tanggal</th><th style="text-align:center;">Qty</th><th style="text-align:right;">Harga</th><th style="text-align:right;">Subtotal</th></tr></thead>
           <tbody>${rows}${transRow}</tbody>
         </table>
         <div class="print-total-box">
@@ -964,7 +1246,7 @@ function printInternal(){
   if(items.length===0){ showToast('Tambahkan item terlebih dahulu'); return; }
   const rows = items.map(it=>`
     <tr>
-      <td>${escapeHtml(it.desc)} <span class="muted" style="font-size:10.5px;">(${it.jenis})</span></td>
+      <td>${escapeHtml(it.desc)}<br><span class="muted" style="font-size:10px;">${escapeHtml(it.ruang||'')}${it.ruang&&it.tanggalKerja?' · ':''}${it.tanggalKerja||''}</span></td>
       <td style="text-align:center;">${it.qty}</td>
       <td style="text-align:right;">${fmt(it.modal)}</td>
       <td style="text-align:right;">${fmt(it.jual)}</td>
@@ -980,10 +1262,18 @@ function printInternal(){
     </tr>` : '';
   const diskonLabel = n.diskonTipe==='persen' ? `Diskon (${n.diskonNilai}%)` : 'Diskon';
   const splitRows = [
-    {label:'Pemilik Usaha', pct:n.split.owner},
-    {label:'Jasa Mekanik AC (' + (n.mekanik||'-') + ')', pct:n.split.mekanik},
-    {label:'Helper (' + (n.helper||'-') + ')', pct:n.split.helper},
-  ].map(r=>`<div class="line"><span>${escapeHtml(r.label)} — ${r.pct}%</span><span>${fmt(n.totals.profit * r.pct/100)}</span></div>`).join('');
+    {label:'— Kelompok Jasa —', pct:null},
+    {label:'Pemilik Usaha (Jasa)', pct:n.split.jasa.owner, base:n.totals.profitJasa},
+    {label:'Mekanik AC (' + (n.mekanik||'-') + ')', pct:n.split.jasa.mekanik, base:n.totals.profitJasa},
+    {label:'Helper (' + (n.helper||'-') + ')', pct:n.split.jasa.helper, base:n.totals.profitJasa},
+    {label:'— Kelompok Sparepart —', pct:null},
+    {label:'Pemilik Usaha (Sparepart)', pct:n.split.part.owner, base:n.totals.profitPart},
+    {label:'Mekanik AC (' + (n.mekanik||'-') + ')', pct:n.split.part.mekanik, base:n.totals.profitPart},
+    {label:'Helper (' + (n.helper||'-') + ')', pct:n.split.part.helper, base:n.totals.profitPart},
+  ].map(r=> r.pct===null
+      ? `<div class="line" style="font-weight:700;color:var(--teal-deep);margin-top:6px;"><span>${r.label}</span><span></span></div>`
+      : `<div class="line"><span>${escapeHtml(r.label)} — ${r.pct}%</span><span>${fmt(r.base * r.pct/100)}</span></div>`
+    ).join('');
   document.getElementById('printArea').innerHTML = `
     <div class="nota-print">
       <div class="nota-head" style="background:var(--gold);">
@@ -1000,10 +1290,10 @@ function printInternal(){
         <span class="internal-badge">Internal Only</span>
         <div class="nota-meta">
           <div><span>Pelanggan</span>${escapeHtml(n.custNama)}</div>
-          <div><span>Tanggal</span>${n.tanggal}</div>
+          <div><span>Tanggal Nota</span>${n.tanggal}</div>
         </div>
         <table class="print-table">
-          <thead><tr><th>Deskripsi</th><th style="text-align:center;">Qty</th><th style="text-align:right;">Modal</th><th style="text-align:right;">Jual</th><th style="text-align:right;">Laba</th></tr></thead>
+          <thead><tr><th>Deskripsi / Ruang / Tanggal</th><th style="text-align:center;">Qty</th><th style="text-align:right;">Modal</th><th style="text-align:right;">Jual</th><th style="text-align:right;">Laba</th></tr></thead>
           <tbody>${rows}${transRow}</tbody>
         </table>
         <div class="print-total-box">
@@ -1011,7 +1301,9 @@ function printInternal(){
           <div class="line"><span>Subtotal Jual</span><span>${fmt(n.totals.grossJual)}</span></div>
           <div class="line"><span>${diskonLabel}</span><span>– ${fmt(n.totals.diskon)}</span></div>
           <div class="line"><span>Total Tagihan</span><span>${fmt(n.totals.tagihan)}</span></div>
-          <div class="line grand"><span>Profit Bersih</span><span>${fmt(n.totals.profit)}</span></div>
+          <div class="line"><span>Profit Jasa</span><span>${fmt(n.totals.profitJasa)}</span></div>
+          <div class="line"><span>Profit Sparepart</span><span>${fmt(n.totals.profitPart)}</span></div>
+          <div class="line grand"><span>Total Profit</span><span>${fmt(n.totals.profit)}</span></div>
         </div>
         <div style="margin-top:18px;font-weight:700;font-size:13px;color:var(--teal-deep);">Pembagian Profit</div>
         <div class="print-total-box" style="margin-top:6px;">
@@ -1032,6 +1324,9 @@ function printInternal(){
   await loadDefaults();
   await loadMasterItems();
   resetForm(true);
+  const today = todayISO();
+  document.getElementById('rekapDari').value = today.slice(0,8) + '01';
+  document.getElementById('rekapSampai').value = today;
 })();
 </script>
 </body>
