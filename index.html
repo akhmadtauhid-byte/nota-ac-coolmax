@@ -471,17 +471,17 @@
    (didapat setelah Deploy > New deployment di Apps Script).
    Contoh: https://script.google.com/macros/s/AKfycbx.../exec
    ========================================================== */
-const APPS_SCRIPT_URL = 'PASTE_URL_APPS_SCRIPT_DI_SINI';
+const https://script.google.com/macros/s/AKfycbyP83pwOPlGdUVQOMEvxdQXpRmrWJLuy0w7vW2DguxJInM2NBKnDeUaTT8d78n95W-M/exec = 'PASTE_URL_APPS_SCRIPT_DI_SINI';
 
 async function apiGet(action, params){
-  const url = new URL(APPS_SCRIPT_URL);
+  const url = new URL(https://script.google.com/macros/s/AKfycbyP83pwOPlGdUVQOMEvxdQXpRmrWJLuy0w7vW2DguxJInM2NBKnDeUaTT8d78n95W-M/exec);
   url.searchParams.set('action', action);
   if(params){ Object.keys(params).forEach(k=> url.searchParams.set(k, params[k])); }
   const res = await fetch(url.toString());
   return await res.json();
 }
 async function apiPost(action, payload){
-  const res = await fetch(APPS_SCRIPT_URL, {
+  const res = await fetch(https://script.google.com/macros/s/AKfycbyP83pwOPlGdUVQOMEvxdQXpRmrWJLuy0w7vW2DguxJInM2NBKnDeUaTT8d78n95W-M/exec, {
     method:'POST',
     headers:{'Content-Type':'text/plain;charset=utf-8'}, // hindari CORS preflight
     body: JSON.stringify(Object.assign({action}, payload))
