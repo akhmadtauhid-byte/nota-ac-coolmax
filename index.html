@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coolmax AC Service — Sistem Nota & Bagi Hasil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal-deep:#0E4F52;
+    --teal:#0E7C86;
+    --cyan:#00B4C6;
+    --cyan-bright:#22D3D3;
+    --frost:#EAF6F6;
+    --frost-2:#F5FBFB;
+    --ink:#0B2027;
+    --ink-soft:#42646A;
+    --line:#CFE6E6;
+    --gold:#C7860B;
+    --gold-soft:#FBF1DC;
+    --purple:#6A4FB6;
+    --purple-soft:#F1EDFB;
+    --red:#B5423A;
+    --white:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    background:
+      radial-gradient(circle at 15% 0%, #0E7C86 0%, transparent 45%),
+      radial-gradient(circle at 100% 10%, #0E4F52 0%, transparent 40%),
+      var(--frost);
+    color:var(--ink);
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+  .topbar{
+    background:linear-gradient(120deg,var(--teal-deep),var(--teal) 60%,var(--cyan) 130%);
+    color:#fff;
+    padding:22px 24px 46px;
+    position:relative;
+    overflow:hidden;
+  }
+  .topbar::after{
+    content:"";
+    position:absolute; inset:0;
+    background-image:radial-gradient(rgba(255,255,255,.18) 1.4px, transparent 1.4px);
+    background-size:16px 16px;
+    opacity:.35;
+    pointer-events:none;
+  }
+  .brand-row{display:flex;align-items:center;gap:14px;position:relative;z-index:1;}
+  .brand-mark{
+    width:46px;height:46px;border-radius:12px;
+    background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.35);
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .brand-mark svg{width:26px;height:26px;}
+  .brand-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;letter-spacing:.2px;}
+  .brand-sub{font-size:12.5px;opacity:.85;margin-top:1px;}
+  .container{max-width:1040px;margin:-26px auto 0;padding:0 20px;position:relative;z-index:2;}
+  .tabs{display:flex;gap:6px;background:#fff;border-radius:14px;padding:6px;box-shadow:0 10px 30px -12px rgba(11,32,39,.25);border:1px solid var(--line);flex-wrap:wrap;}
+  .tab-btn{
+    flex:1;min-width:120px;border:none;background:transparent;padding:12px 8px;border-radius:10px;
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13.5px;color:var(--ink-soft);
+    cursor:pointer;transition:.15s;
+  }
+  .tab-btn.active{background:var(--teal-deep);color:#fff;}
+  .card{
+    background:#fff;border-radius:16px;padding:22px;margin-top:16px;
+    box-shadow:0 10px 30px -16px rgba(11,32,39,.18);border:1px solid var(--line);
+  }
+  .card h2{
+    font-family:'Space Grotesk',sans-serif;font-size:15px;margin:0 0 16px;
+    display:flex;align-items:center;gap:8px;color:var(--teal-deep);
+  }
+  .card h2 .num{
+    width:22px;height:22px;border-radius:6px;background:var(--frost);color:var(--teal);
+    font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;
+  }
+  .card p.hint{font-size:12.5px;color:var(--ink-soft);margin:-10px 0 16px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  .grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;}
+  @media(max-width:640px){.grid2,.grid3,.grid4{grid-template-columns:1fr;}}
+  label{font-size:12px;font-weight:600;color:var(--ink-soft);display:block;margin-bottom:5px;}
+  input[type=text], input[type=date], input[type=number], textarea, select{
+    width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:9px;
+    font-family:'Inter',sans-serif;font-size:13.5px;color:var(--ink);background:var(--frost-2);
+    outline:none;transition:.12s;
+  }
+  input:focus, select:focus, textarea:focus{border-color:var(--cyan);background:#fff;}
+  .field{margin-bottom:12px;}
+  table{width:100%;border-collapse:collapse;margin-top:6px;}
+  th{
+    font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);
+    text-align:left;padding:8px 8px;border-bottom:2px solid var(--line);font-weight:700;
+  }
+  td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  td input, td select{padding:7px 8px;font-size:13px;}
+  .col-master{min-width:190px;}
+  .col-desc{min-width:150px;}
+  .col-num{width:80px;}
+  .col-money{width:115px;}
+  .row-remove{
+    background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:4px;
+    display:flex;align-items:center;justify-content:center;border-radius:6px;
+  }
+  .row-remove:hover{background:#FBEAE8;}
+  .add-row-btn{
+    margin-top:10px;border:1.5px dashed var(--cyan);background:var(--frost-2);color:var(--teal-deep);
+    padding:9px 14px;border-radius:9px;font-weight:600;font-size:13px;cursor:pointer;width:100%;
+  }
+  .add-row-btn:hover{background:var(--frost);}
+  .badge-jenis{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;text-transform:uppercase;letter-spacing:.03em;}
+  .badge-jasa{background:var(--frost);color:var(--teal);}
+  .badge-part{background:var(--purple-soft);color:var(--purple);}
+  .badge-lain{background:#F1F1F1;color:var(--ink-soft);}
+
+  .summary-box{
+    background:var(--frost-2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-top:6px;
+  }
+  .summary-line{display:flex;justify-content:space-between;padding:5px 0;font-size:13.5px;}
+  .summary-line.sub{padding-left:14px;font-size:12.5px;}
+  .summary-line.total{
+    border-top:1.5px dashed var(--line);margin-top:6px;padding-top:10px;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;color:var(--teal-deep);
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .muted{color:var(--ink-soft);}
+
+  .split-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);}
+  .split-row:last-child{border-bottom:none;}
+  .split-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .split-label{flex:1;font-weight:600;font-size:13.5px;}
+  .split-pct-input{width:64px;text-align:right;}
+  .split-amount{width:150px;text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;color:var(--teal-deep);}
+  .pct-warning{color:var(--red);font-size:12px;font-weight:600;margin-top:8px;}
+  .pct-ok{color:var(--teal);font-size:12px;font-weight:600;margin-top:8px;}
+
+  .btn-row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
+  .btn{
+    border:none;border-radius:10px;padding:12px 18px;font-weight:700;font-size:13.5px;cursor:pointer;
+    font-family:'Space Grotesk',sans-serif;display:flex;align-items:center;gap:8px;
+  }
+  .btn-primary{background:var(--teal-deep);color:#fff;}
+  .btn-primary:hover{background:#0a3d40;}
+  .btn-outline{background:#fff;color:var(--teal-deep);border:1.5px solid var(--teal-deep);}
+  .btn-outline:hover{background:var(--frost);}
+  .btn-gold{background:var(--gold);color:#fff;}
+  .btn-gold:hover{background:#a86f08;}
+  .btn-sm{padding:8px 12px;font-size:12.5px;}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+
+  .diskon-row{display:flex;gap:8px;}
+  .diskon-row select{max-width:100px;flex-shrink:0;}
+
+  /* Master data */
+  .master-add-form{display:grid;grid-template-columns:110px 1fr 130px 130px 90px;gap:10px;align-items:end;margin-bottom:18px;}
+  @media(max-width:760px){.master-add-form{grid-template-columns:1fr 1fr;}}
+  .master-table-wrap{border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .master-group-title{
+    background:var(--frost);padding:8px 14px;font-size:11px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.04em;color:var(--teal-deep);
+  }
+  .master-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);}
+  .master-row:last-child{border-bottom:none;}
+  .master-row .m-name{flex:1;font-weight:600;font-size:13.5px;}
+  .master-row .m-price{font-family:'JetBrains Mono',monospace;font-size:12.5px;width:110px;text-align:right;}
+  .master-row .m-actions{display:flex;gap:6px;}
+  .master-row .m-actions button{
+    font-size:11px;padding:5px 9px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--ink-soft);font-weight:600;
+  }
+  .master-row .m-actions button:hover{border-color:var(--cyan);color:var(--teal-deep);}
+  .margin-tag{font-size:10.5px;color:var(--gold);font-weight:700;}
+
+  /* History */
+  .hist-item{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:13px 14px;border:1px solid var(--line);border-radius:11px;margin-bottom:10px;background:#fff;
+  }
+  .hist-item:hover{border-color:var(--cyan);}
+  .hist-id{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--teal);font-weight:700;}
+  .hist-name{font-weight:700;font-size:14px;margin-top:2px;}
+  .hist-meta{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .hist-total{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--teal-deep);text-align:right;}
+  .hist-actions{display:flex;gap:6px;margin-top:6px;}
+  .hist-actions button{
+    font-size:11.5px;padding:5px 9px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--ink-soft);font-weight:600;
+  }
+  .hist-actions button:hover{border-color:var(--cyan);color:var(--teal-deep);}
+  .empty-state{text-align:center;padding:50px 20px;color:var(--ink-soft);}
+
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:13.5px;font-weight:600;
+    opacity:0;transition:.25s;z-index:999;box-shadow:0 10px 30px rgba(0,0,0,.25);
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* PRINT AREA (hidden on screen) */
+  #printArea{display:none;}
+  .perforation{
+    height:14px;
+    background-image:radial-gradient(circle at 8px 7px, var(--frost) 6px, transparent 6.5px);
+    background-size:16px 14px;
+    background-repeat:repeat-x;
+    background-color:var(--teal-deep);
+  }
+  .nota-print{
+    width:100%;max-width:640px;margin:0 auto;font-family:'Inter',sans-serif;color:#0B2027;
+  }
+  .nota-head{
+    background:var(--teal-deep);color:#fff;padding:20px 24px;border-radius:12px 12px 0 0;
+    display:flex;justify-content:space-between;align-items:flex-start;
+  }
+  .nota-head h1{font-family:'Space Grotesk',sans-serif;font-size:19px;margin:0;}
+  .nota-head .sub{font-size:11.5px;opacity:.85;margin-top:2px;}
+  .nota-body{border:1.5px solid var(--line);border-top:none;padding:22px 24px;border-radius:0 0 12px 12px;}
+  .nota-meta{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:16px;}
+  .nota-meta div span{display:block;color:var(--ink-soft);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;}
+  table.print-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  table.print-table th{border-bottom:1.5px solid var(--ink);padding:6px 4px;text-align:left;font-size:10.5px;text-transform:uppercase;}
+  table.print-table td{padding:7px 4px;border-bottom:1px solid var(--line);}
+  .print-total-box{margin-top:14px;border-top:1.5px dashed var(--line);padding-top:10px;}
+  .print-total-box .line{display:flex;justify-content:space-between;padding:3px 0;font-size:13px;}
+  .print-total-box .grand{font-weight:700;font-size:16px;color:var(--teal-deep);border-top:1px solid var(--ink);margin-top:6px;padding-top:8px;}
+  .print-footer{margin-top:24px;display:flex;justify-content:space-between;font-size:12px;}
+  .sign-box{text-align:center;width:150px;}
+  .sign-line{border-top:1px solid var(--ink);margin-top:50px;padding-top:4px;}
+  .internal-badge{
+    display:inline-block;background:var(--gold-soft);color:var(--gold);font-size:10px;font-weight:700;
+    padding:3px 8px;border-radius:6px;letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px;
+  }
+
+  @media print{
+    body *{visibility:hidden;}
+    #printArea, #printArea *{visibility:visible;}
+    #printArea{display:block;position:absolute;top:0;left:0;width:100%;}
+    body{background:#fff;padding:0;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand-row">
+    <div class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19" stroke-linecap="round"/></svg>
+    </div>
+    <div>
+      <div class="brand-title">Coolmax AC Service</div>
+      <div class="brand-sub">Sistem Nota Tagihan &amp; Bagi Hasil Mekanik</div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="buat" onclick="switchTab('buat')">Buat Nota</button>
+    <button class="tab-btn" data-tab="riwayat" onclick="switchTab('riwayat')">Riwayat Nota</button>
+    <button class="tab-btn" data-tab="master" onclick="switchTab('master')">Master Jasa &amp; Sparepart</button>
+    <button class="tab-btn" data-tab="pengaturan" onclick="switchTab('pengaturan')">Pengaturan Bagi Hasil</button>
+  </div>
+
+  <!-- TAB: BUAT NOTA -->
+  <div id="tab-buat">
+    <div class="card">
+      <h2><span class="num">1</span> Informasi Pelanggan &amp; Pekerjaan</h2>
+      <div class="grid3">
+        <div class="field">
+          <label>No. Nota</label>
+          <input type="text" id="notaId" readonly>
+        </div>
+        <div class="field">
+          <label>Tanggal</label>
+          <input type="date" id="notaTanggal">
+        </div>
+        <div class="field">
+          <label>Nama Mekanik</label>
+          <input type="text" id="mekanikNama" placeholder="Nama mekanik utama">
+        </div>
+      </div>
+      <div class="grid3">
+        <div class="field">
+          <label>Nama Pelanggan</label>
+          <input type="text" id="custNama" placeholder="Nama pelanggan">
+        </div>
+        <div class="field">
+          <label>No. Telepon</label>
+          <input type="text" id="custHp" placeholder="08xxxxxxxxxx">
+        </div>
+        <div class="field">
+          <label>Nama Helper (opsional)</label>
+          <input type="text" id="helperNama" placeholder="Nama helper">
+        </div>
+      </div>
+      <div class="field">
+        <label>Alamat / Lokasi Pekerjaan</label>
+        <input type="text" id="custAlamat" placeholder="Alamat lengkap lokasi service">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">2</span> Rincian Jasa &amp; Sparepart</h2>
+      <p class="hint">Pilih dari master untuk mengisi otomatis harga modal &amp; jual, atau pilih "Input Manual" untuk item baru yang belum ada di master.</p>
+      <table id="itemsTable">
+        <thead>
+          <tr>
+            <th class="col-master">Pilih Item</th>
+            <th class="col-desc">Deskripsi</th>
+            <th class="col-num">Qty</th>
+            <th class="col-money">Modal / unit</th>
+            <th class="col-money">Harga Jual / unit</th>
+            <th class="col-money">Subtotal</th>
+            <th style="width:34px"></th>
+          </tr>
+        </thead>
+        <tbody id="itemsBody"></tbody>
+      </table>
+      <button class="add-row-btn" onclick="addItem()">+ Tambah Baris</button>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">3</span> Transportasi</h2>
+      <p class="hint">Isi jika ada biaya transport ke lokasi pelanggan. Biaya jual akan masuk ke total tagihan, biaya modal (bensin/ongkos) mengurangi profit.</p>
+      <div class="grid3">
+        <div class="field">
+          <label>Keterangan Transport</label>
+          <input type="text" id="transKet" placeholder="cth: Transport luar kota / antar sparepart" value="Biaya Transportasi">
+        </div>
+        <div class="field">
+          <label>Biaya Modal Transport (Rp)</label>
+          <input type="number" id="transModal" value="0" min="0" oninput="recalc()">
+        </div>
+        <div class="field">
+          <label>Biaya Transport ke Pelanggan (Rp)</label>
+          <input type="number" id="transJual" value="0" min="0" oninput="recalc()">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">4</span> Ringkasan Tagihan</h2>
+      <div class="grid2" style="margin-bottom:4px;">
+        <div class="field">
+          <label>Diskon</label>
+          <div class="diskon-row">
+            <select id="diskonTipe" onchange="recalc()">
+              <option value="rp">Rp</option>
+              <option value="persen">%</option>
+            </select>
+            <input type="number" id="diskonNilai" value="0" min="0" oninput="recalc()">
+          </div>
+        </div>
+        <div class="field">
+          <label>Catatan Nota (opsional)</label>
+          <input type="text" id="catatan" placeholder="cth: Garansi service 1 bulan">
+        </div>
+      </div>
+      <div class="summary-box">
+        <div class="summary-line"><span class="muted">Subtotal Jasa &amp; Sparepart (Jual)</span><span class="mono" id="sumItemsJual">Rp 0</span></div>
+        <div class="summary-line"><span class="muted">Biaya Transport (Jual)</span><span class="mono" id="sumTransJual">Rp 0</span></div>
+        <div class="summary-line"><span class="muted">Diskon</span><span class="mono" id="sumDiskon">– Rp 0</span></div>
+        <div class="summary-line total"><span>Total Tagihan Pelanggan</span><span class="mono" id="sumTagihan">Rp 0</span></div>
+        <div class="summary-line sub" style="margin-top:10px;"><span class="muted">Modal Jasa &amp; Sparepart</span><span class="mono" id="sumItemsModal">Rp 0</span></div>
+        <div class="summary-line sub"><span class="muted">Modal Transport</span><span class="mono" id="sumTransModal">Rp 0</span></div>
+        <div class="summary-line"><span class="muted">Total Modal</span><span class="mono" id="sumModal">Rp 0</span></div>
+        <div class="summary-line" style="margin-top:6px;"><span class="muted">Estimasi Profit (sebelum bagi hasil)</span><span class="mono" id="sumProfit" style="color:var(--gold);font-weight:700;">Rp 0</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">5</span> Pembagian Profit</h2>
+      <div id="splitContainer"></div>
+      <div id="pctStatus"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveNota()">💾 Simpan Nota</button>
+      <button class="btn btn-outline" onclick="printCustomer()">🧾 Cetak Nota Pelanggan</button>
+      <button class="btn btn-gold" onclick="printInternal()">📋 Cetak Slip Internal (Bagi Hasil)</button>
+      <button class="btn btn-outline" onclick="resetForm(true)">↺ Nota Baru</button>
+    </div>
+  </div>
+
+  <!-- TAB: RIWAYAT -->
+  <div id="tab-riwayat" style="display:none;">
+    <div class="card">
+      <h2><span class="num">☰</span> Riwayat Nota Tersimpan</h2>
+      <div id="historyList"></div>
+    </div>
+  </div>
+
+  <!-- TAB: MASTER DATA -->
+  <div id="tab-master" style="display:none;">
+    <div class="card">
+      <h2><span class="num">+</span> Tambah Item Master</h2>
+      <p class="hint">Item yang ditambahkan di sini akan muncul di dropdown "Pilih Item" saat membuat nota.</p>
+      <div class="master-add-form">
+        <div class="field" style="margin-bottom:0;">
+          <label>Jenis</label>
+          <select id="mNewJenis">
+            <option value="Jasa">Jasa</option>
+            <option value="Sparepart">Sparepart</option>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>Nama Item</label>
+          <input type="text" id="mNewNama" placeholder="cth: Cuci AC 1 PK / Freon R32 per kg">
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>Harga Modal (Rp)</label>
+          <input type="number" id="mNewModal" value="0" min="0">
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>Harga Jual (Rp)</label>
+          <input type="number" id="mNewJual" value="0" min="0">
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="addMasterItem()">+ Tambah</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">✎</span> Master Jasa</h2>
+      <div class="master-table-wrap" id="masterJasaList"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">✎</span> Master Sparepart</h2>
+      <div class="master-table-wrap" id="masterPartList"></div>
+    </div>
+  </div>
+
+  <!-- TAB: PENGATURAN -->
+  <div id="tab-pengaturan" style="display:none;">
+    <div class="card">
+      <h2><span class="num">%</span> Persentase Default Bagi Hasil</h2>
+      <p class="hint">Persentase ini akan otomatis dipakai setiap kali membuat nota baru. Bisa diubah lagi per-nota bila perlu.</p>
+      <div class="grid3">
+        <div class="field">
+          <label>Pemilik Usaha (%)</label>
+          <input type="number" id="defOwner" value="40" min="0" max="100">
+        </div>
+        <div class="field">
+          <label>Mekanik AC (%)</label>
+          <input type="number" id="defMekanik" value="40" min="0" max="100">
+        </div>
+        <div class="field">
+          <label>Helper (%)</label>
+          <input type="number" id="defHelper" value="20" min="0" max="100">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="saveDefaults()">Simpan Pengaturan Default</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- PRINT AREA -->
+<div id="printArea"></div>
+
+<script>
+/* ==========================================================
+   GANTI URL DI BAWAH INI dengan URL Web App Apps Script Anda
+   (didapat setelah Deploy > New deployment di Apps Script).
+   Contoh: https://script.google.com/macros/s/AKfycbx.../exec
+   ========================================================== */
+const APPS_SCRIPT_URL = 'PASTE_URL_APPS_SCRIPT_DI_SINI';
+
+async function apiGet(action, params){
+  const url = new URL(APPS_SCRIPT_URL);
+  url.searchParams.set('action', action);
+  if(params){ Object.keys(params).forEach(k=> url.searchParams.set(k, params[k])); }
+  const res = await fetch(url.toString());
+  return await res.json();
+}
+async function apiPost(action, payload){
+  const res = await fetch(APPS_SCRIPT_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'}, // hindari CORS preflight
+    body: JSON.stringify(Object.assign({action}, payload))
+  });
+  return await res.json();
+}
+
+let items = [];
+let itemSeq = 0;
+let currentSplit = { owner: 40, mekanik: 40, helper: 20 };
+let masterItems = []; // {id, jenis, nama, modal, jual}
+let editingId = null;
+
+function fmt(n){
+  n = Math.round(n||0);
+  return 'Rp ' + n.toLocaleString('id-ID');
+}
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+function switchTab(name){
+  ['buat','riwayat','master','pengaturan'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display = (t===name)?'block':'none';
+  });
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.tab===name);
+  });
+  if(name==='riwayat') renderHistory();
+  if(name==='master') renderMasterList();
+}
+
+function escapeHtml(s){
+  return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------- MASTER DATA ---------- */
+
+async function loadMasterItems(){
+  try{
+    const res = await apiGet('getMaster');
+    masterItems = Array.isArray(res) ? res.map(m=>({...m, modal:Number(m.modal)||0, jual:Number(m.jual)||0})) : [];
+  }catch(e){ masterItems = []; showToast('Gagal memuat master dari spreadsheet'); }
+}
+
+async function addMasterItem(){
+  const jenis = document.getElementById('mNewJenis').value;
+  const nama = document.getElementById('mNewNama').value.trim();
+  const modal = Number(document.getElementById('mNewModal').value)||0;
+  const jual = Number(document.getElementById('mNewJual').value)||0;
+  if(!nama){ showToast('Isi nama item terlebih dahulu'); return; }
+  const id = 'm' + Date.now() + Math.floor(Math.random()*1000);
+  const item = {id, jenis, nama, modal, jual};
+  try{
+    await apiPost('saveMaster', {data:item});
+    masterItems.push(item);
+    document.getElementById('mNewNama').value = '';
+    document.getElementById('mNewModal').value = 0;
+    document.getElementById('mNewJual').value = 0;
+    renderMasterList();
+    showToast('Item master ditambahkan');
+  }catch(e){ showToast('Gagal menyimpan ke spreadsheet'); }
+}
+
+async function deleteMasterItem(id){
+  if(!confirm('Hapus item master ini?')) return;
+  try{
+    await apiPost('deleteMaster', {id});
+    masterItems = masterItems.filter(m=>m.id!==id);
+    renderMasterList();
+    showToast('Item master dihapus');
+  }catch(e){ showToast('Gagal menghapus di spreadsheet'); }
+}
+
+async function editMasterItem(id){
+  const m = masterItems.find(x=>x.id===id);
+  if(!m) return;
+  const nama = prompt('Nama item:', m.nama);
+  if(nama===null) return;
+  const modal = prompt('Harga modal (Rp):', m.modal);
+  if(modal===null) return;
+  const jual = prompt('Harga jual (Rp):', m.jual);
+  if(jual===null) return;
+  m.nama = nama.trim() || m.nama;
+  m.modal = Number(modal)||0;
+  m.jual = Number(jual)||0;
+  try{
+    await apiPost('saveMaster', {data:m});
+    renderMasterList();
+    showToast('Item master diperbarui');
+  }catch(e){ showToast('Gagal menyimpan perubahan'); }
+}
+
+function renderMasterList(){
+  const jasaWrap = document.getElementById('masterJasaList');
+  const partWrap = document.getElementById('masterPartList');
+  const jasa = masterItems.filter(m=>m.jenis==='Jasa');
+  const part = masterItems.filter(m=>m.jenis==='Sparepart');
+
+  const rowHtml = (m)=>{
+    const margin = m.jual - m.modal;
+    return `
+      <div class="master-row">
+        <div class="m-name">${escapeHtml(m.nama)}<div class="margin-tag">margin ${fmt(margin)}</div></div>
+        <div class="m-price muted">Modal<br>${fmt(m.modal)}</div>
+        <div class="m-price">Jual<br>${fmt(m.jual)}</div>
+        <div class="m-actions">
+          <button onclick="editMasterItem('${m.id}')">Edit</button>
+          <button onclick="deleteMasterItem('${m.id}')">Hapus</button>
+        </div>
+      </div>`;
+  };
+
+  jasaWrap.innerHTML = jasa.length
+    ? jasa.map(rowHtml).join('')
+    : `<div class="empty-state" style="padding:24px;">Belum ada master jasa. Tambahkan di form atas.</div>`;
+  partWrap.innerHTML = part.length
+    ? part.map(rowHtml).join('')
+    : `<div class="empty-state" style="padding:24px;">Belum ada master sparepart. Tambahkan di form atas.</div>`;
+}
+
+function masterOptionsHtml(selectedId){
+  const jasa = masterItems.filter(m=>m.jenis==='Jasa');
+  const part = masterItems.filter(m=>m.jenis==='Sparepart');
+  let html = `<option value="" ${!selectedId?'selected':''}>— Input Manual —</option>`;
+  if(jasa.length){
+    html += `<optgroup label="Jasa">`;
+    jasa.forEach(m=> html += `<option value="${m.id}" ${selectedId===m.id?'selected':''}>${escapeHtml(m.nama)}</option>`);
+    html += `</optgroup>`;
+  }
+  if(part.length){
+    html += `<optgroup label="Sparepart">`;
+    part.forEach(m=> html += `<option value="${m.id}" ${selectedId===m.id?'selected':''}>${escapeHtml(m.nama)}</option>`);
+    html += `</optgroup>`;
+  }
+  return html;
+}
+
+/* ---------- ITEM ROWS ---------- */
+
+function addItem(prefill){
+  const id = 'it' + (itemSeq++);
+  items.push(prefill ? {...prefill, id} : {id, masterId:'', jenis:'Jasa', desc:'', qty:1, modal:0, jual:0});
+  renderItems();
+}
+function removeItem(id){
+  items = items.filter(i=>i.id!==id);
+  renderItems();
+}
+function updateItem(id, field, val){
+  const it = items.find(i=>i.id===id);
+  if(!it) return;
+  if(field==='masterId'){
+    it.masterId = val;
+    if(val){
+      const m = masterItems.find(x=>x.id===val);
+      if(m){ it.jenis = m.jenis; it.desc = m.nama; it.modal = m.modal; it.jual = m.jual; }
+    }
+  } else {
+    it[field] = (field==='qty'||field==='modal'||field==='jual') ? Number(val)||0 : val;
+  }
+  renderItems();
+}
+
+function renderItems(){
+  const body = document.getElementById('itemsBody');
+  body.innerHTML = '';
+  items.forEach(it=>{
+    const tr = document.createElement('tr');
+    const subtotal = it.qty * it.jual;
+    const badgeClass = it.jenis==='Jasa' ? 'badge-jasa' : (it.jenis==='Sparepart' ? 'badge-part' : 'badge-lain');
+    tr.innerHTML = `
+      <td class="col-master">
+        <select onchange="updateItem('${it.id}','masterId',this.value)">
+          ${masterOptionsHtml(it.masterId)}
+        </select>
+      </td>
+      <td class="col-desc">
+        <span class="badge-jenis ${badgeClass}" style="display:block;width:fit-content;margin-bottom:4px;">${it.jenis}</span>
+        <input type="text" value="${escapeHtml(it.desc)}" placeholder="Deskripsi item" onchange="updateItem('${it.id}','desc',this.value)">
+      </td>
+      <td class="col-num"><input type="number" min="0" value="${it.qty}" onchange="updateItem('${it.id}','qty',this.value)"></td>
+      <td class="col-money"><input type="number" min="0" value="${it.modal}" onchange="updateItem('${it.id}','modal',this.value)"></td>
+      <td class="col-money"><input type="number" min="0" value="${it.jual}" onchange="updateItem('${it.id}','jual',this.value)"></td>
+      <td class="col-money mono">${fmt(subtotal)}</td>
+      <td><button class="row-remove" onclick="removeItem('${it.id}')">✕</button></td>
+    `;
+    body.appendChild(tr);
+  });
+  recalc();
+}
+
+/* ---------- TOTALS ---------- */
+
+function calcTotals(){
+  let itemsModal=0, itemsJual=0;
+  items.forEach(it=>{ itemsModal += it.qty*it.modal; itemsJual += it.qty*it.jual; });
+  const transModal = Number(document.getElementById('transModal').value)||0;
+  const transJual = Number(document.getElementById('transJual').value)||0;
+
+  const totalModal = itemsModal + transModal;
+  const grossJual = itemsJual + transJual;
+
+  const diskonTipe = document.getElementById('diskonTipe').value;
+  const diskonNilai = Number(document.getElementById('diskonNilai').value)||0;
+  const diskon = diskonTipe === 'persen' ? Math.round(grossJual * diskonNilai / 100) : diskonNilai;
+
+  const tagihan = grossJual - diskon;
+  const profit = tagihan - totalModal;
+  return {itemsModal, itemsJual, transModal, transJual, totalModal, grossJual, diskon, tagihan, profit};
+}
+
+function recalc(){
+  const t = calcTotals();
+  document.getElementById('sumItemsJual').textContent = fmt(t.itemsJual);
+  document.getElementById('sumTransJual').textContent = fmt(t.transJual);
+  document.getElementById('sumDiskon').textContent = '– ' + fmt(t.diskon);
+  document.getElementById('sumTagihan').textContent = fmt(t.tagihan);
+  document.getElementById('sumItemsModal').textContent = fmt(t.itemsModal);
+  document.getElementById('sumTransModal').textContent = fmt(t.transModal);
+  document.getElementById('sumModal').textContent = fmt(t.totalModal);
+  document.getElementById('sumProfit').textContent = fmt(t.profit);
+  renderSplit(t.profit);
+}
+
+function renderSplit(profit){
+  const c = document.getElementById('splitContainer');
+  const roles = [
+    {key:'owner', label:'Pemilik Usaha', color:'#0E7C86'},
+    {key:'mekanik', label:'Jasa Mekanik AC', color:'#00B4C6'},
+    {key:'helper', label:'Helper', color:'#C7860B'},
+  ];
+  c.innerHTML = roles.map(r=>`
+    <div class="split-row">
+      <span class="split-dot" style="background:${r.color}"></span>
+      <span class="split-label">${r.label}</span>
+      <input type="number" class="split-pct-input" min="0" max="100" value="${currentSplit[r.key]}" onchange="updateSplit('${r.key}', this.value)"> %
+      <span class="split-amount">${fmt((profit||0) * currentSplit[r.key] / 100)}</span>
+    </div>
+  `).join('');
+  const total = currentSplit.owner + currentSplit.mekanik + currentSplit.helper;
+  const status = document.getElementById('pctStatus');
+  if(total !== 100){
+    status.innerHTML = `<div class="pct-warning">⚠ Total persentase saat ini ${total}% — sebaiknya tepat 100% agar seluruh profit terbagi habis.</div>`;
+  } else {
+    status.innerHTML = `<div class="pct-ok">✓ Total 100% — profit terbagi habis.</div>`;
+  }
+}
+function updateSplit(key, val){
+  currentSplit[key] = Number(val)||0;
+  recalc();
+}
+
+/* ---------- NOTA CRUD ---------- */
+
+function genNotaId(){
+  const d = new Date();
+  const ymd = d.toISOString().slice(0,10).replace(/-/g,'');
+  const seq = String(Math.floor(Math.random()*900)+100);
+  return `CMX-${ymd}-${seq}`;
+}
+
+function resetForm(newNota){
+  items = [];
+  itemSeq = 0;
+  editingId = null;
+  document.getElementById('notaId').value = newNota ? genNotaId() : '';
+  document.getElementById('notaTanggal').value = todayISO();
+  document.getElementById('mekanikNama').value = '';
+  document.getElementById('helperNama').value = '';
+  document.getElementById('custNama').value = '';
+  document.getElementById('custHp').value = '';
+  document.getElementById('custAlamat').value = '';
+  document.getElementById('transKet').value = 'Biaya Transportasi';
+  document.getElementById('transModal').value = 0;
+  document.getElementById('transJual').value = 0;
+  document.getElementById('diskonTipe').value = 'rp';
+  document.getElementById('diskonNilai').value = 0;
+  document.getElementById('catatan').value = '';
+  addItem({masterId:'', jenis:'Jasa', desc:'Jasa Cuci / Service AC', qty:1, modal:0, jual:0});
+}
+
+async function saveDefaults(){
+  const owner = Number(document.getElementById('defOwner').value)||0;
+  const mekanik = Number(document.getElementById('defMekanik').value)||0;
+  const helper = Number(document.getElementById('defHelper').value)||0;
+  const defaults = {owner, mekanik, helper};
+  try{
+    await apiPost('saveDefaults', {data:defaults});
+    currentSplit = {...defaults};
+    recalc();
+    showToast('Pengaturan default bagi hasil tersimpan');
+  }catch(e){ showToast('Gagal menyimpan pengaturan ke spreadsheet'); }
+}
+
+async function loadDefaults(){
+  try{
+    const d = await apiGet('getDefaults');
+    if(d && !d.error){
+      currentSplit = d;
+      document.getElementById('defOwner').value = d.owner;
+      document.getElementById('defMekanik').value = d.mekanik;
+      document.getElementById('defHelper').value = d.helper;
+    }
+  }catch(e){ /* no defaults yet, keep built-in default */ }
+}
+
+function buildNotaObject(){
+  const t = calcTotals();
+  return {
+    id: document.getElementById('notaId').value,
+    tanggal: document.getElementById('notaTanggal').value,
+    mekanik: document.getElementById('mekanikNama').value,
+    helper: document.getElementById('helperNama').value,
+    custNama: document.getElementById('custNama').value,
+    custHp: document.getElementById('custHp').value,
+    custAlamat: document.getElementById('custAlamat').value,
+    catatan: document.getElementById('catatan').value,
+    items: items,
+    transKet: document.getElementById('transKet').value,
+    transModal: t.transModal,
+    transJual: t.transJual,
+    diskonTipe: document.getElementById('diskonTipe').value,
+    diskonNilai: Number(document.getElementById('diskonNilai').value)||0,
+    totals: t,
+    split: {...currentSplit},
+    savedAt: new Date().toISOString(),
+  };
+}
+
+async function saveNota(){
+  const nota = buildNotaObject();
+  if(!nota.id){ showToast('No. Nota kosong'); return; }
+  if(!nota.custNama){ showToast('Isi nama pelanggan terlebih dahulu'); return; }
+  if(items.length===0){ showToast('Tambahkan minimal 1 baris item'); return; }
+  try{
+    await apiPost('saveNota', {data:nota});
+    showToast('Nota ' + nota.id + ' tersimpan ke spreadsheet');
+  }catch(e){
+    showToast('Gagal menyimpan nota ke spreadsheet');
+  }
+}
+
+async function renderHistory(){
+  const list = document.getElementById('historyList');
+  list.innerHTML = '<div class="muted" style="font-size:13px;">Memuat riwayat dari spreadsheet…</div>';
+  let idx = [];
+  try{
+    const res = await apiGet('getNotaIndex');
+    if(Array.isArray(res)) idx = res;
+  }catch(e){ idx = []; }
+
+  if(idx.length===0){
+    list.innerHTML = `<div class="empty-state">
+      <div>Belum ada nota tersimpan.</div>
+      <div style="font-size:12.5px;margin-top:4px;">Buat nota baru di tab "Buat Nota", lalu klik Simpan Nota.</div>
+    </div>`;
+    return;
+  }
+  list.innerHTML = idx.map(n=>`
+    <div class="hist-item">
+      <div>
+        <div class="hist-id">${n.id}</div>
+        <div class="hist-name">${escapeHtml(n.custNama||'-')}</div>
+        <div class="hist-meta">${n.tanggal||''} · Profit ${fmt(n.profit)}</div>
+        <div class="hist-actions">
+          <button onclick="openNota('${n.id}')">Buka / Edit</button>
+          <button onclick="deleteNota('${n.id}')">Hapus</button>
+        </div>
+      </div>
+      <div class="hist-total">${fmt(n.total)}</div>
+    </div>
+  `).join('');
+}
+
+async function openNota(id){
+  try{
+    const n = await apiGet('getNota', {id});
+    if(!n || n.error){ showToast('Nota tidak ditemukan'); return; }
+    items = (n.items||[]).map(it=>({...it, id: 'it'+(itemSeq++)}));
+    document.getElementById('notaId').value = n.id;
+    document.getElementById('notaTanggal').value = n.tanggal;
+    document.getElementById('mekanikNama').value = n.mekanik||'';
+    document.getElementById('helperNama').value = n.helper||'';
+    document.getElementById('custNama').value = n.custNama||'';
+    document.getElementById('custHp').value = n.custHp||'';
+    document.getElementById('custAlamat').value = n.custAlamat||'';
+    document.getElementById('transKet').value = n.transKet || 'Biaya Transportasi';
+    document.getElementById('transModal').value = n.transModal||0;
+    document.getElementById('transJual').value = n.transJual||0;
+    document.getElementById('diskonTipe').value = n.diskonTipe||'rp';
+    document.getElementById('diskonNilai').value = n.diskonNilai||0;
+    document.getElementById('catatan').value = n.catatan||'';
+    currentSplit = n.split || currentSplit;
+    editingId = n.id;
+    renderItems();
+    switchTab('buat');
+    showToast('Nota ' + id + ' dimuat untuk diedit');
+  }catch(e){ showToast('Gagal membuka nota'); }
+}
+
+async function deleteNota(id){
+  if(!confirm('Hapus nota ' + id + '? Tindakan ini tidak bisa dibatalkan.')) return;
+  try{
+    await apiPost('deleteNota', {id});
+    renderHistory();
+    showToast('Nota dihapus');
+  }catch(e){ showToast('Gagal menghapus nota di spreadsheet'); }
+}
+
+/* ---------- PRINT ---------- */
+
+function printCustomer(){
+  const n = buildNotaObject();
+  if(items.length===0){ showToast('Tambahkan item terlebih dahulu'); return; }
+  const rows = items.map(it=>`
+    <tr>
+      <td>${escapeHtml(it.desc)} <span class="muted" style="font-size:10.5px;">(${it.jenis})</span></td>
+      <td style="text-align:center;">${it.qty}</td>
+      <td style="text-align:right;">${fmt(it.jual)}</td>
+      <td style="text-align:right;">${fmt(it.qty*it.jual)}</td>
+    </tr>`).join('');
+  const transRow = n.transJual > 0 ? `
+    <tr>
+      <td>${escapeHtml(n.transKet)}</td>
+      <td style="text-align:center;">1</td>
+      <td style="text-align:right;">${fmt(n.transJual)}</td>
+      <td style="text-align:right;">${fmt(n.transJual)}</td>
+    </tr>` : '';
+  const diskonLabel = n.diskonTipe==='persen' ? `Diskon (${n.diskonNilai}%)` : 'Diskon';
+  document.getElementById('printArea').innerHTML = `
+    <div class="nota-print">
+      <div class="nota-head">
+        <div>
+          <h1>Coolmax AC Service</h1>
+          <div class="sub">Jasa Cuci · Service · Perbaikan &amp; Instalasi AC</div>
+        </div>
+        <div style="text-align:right;font-size:12px;">
+          <div>No. Nota</div>
+          <div style="font-weight:700;font-family:'JetBrains Mono',monospace;">${n.id}</div>
+        </div>
+      </div>
+      <div class="perforation"></div>
+      <div class="nota-body">
+        <div class="nota-meta">
+          <div><span>Pelanggan</span>${escapeHtml(n.custNama)}</div>
+          <div><span>Tanggal</span>${n.tanggal}</div>
+        </div>
+        <div class="nota-meta">
+          <div><span>Alamat</span>${escapeHtml(n.custAlamat)||'-'}</div>
+          <div><span>No. HP</span>${escapeHtml(n.custHp)||'-'}</div>
+        </div>
+        <table class="print-table">
+          <thead><tr><th>Deskripsi</th><th style="text-align:center;">Qty</th><th style="text-align:right;">Harga</th><th style="text-align:right;">Subtotal</th></tr></thead>
+          <tbody>${rows}${transRow}</tbody>
+        </table>
+        <div class="print-total-box">
+          <div class="line"><span>Subtotal</span><span>${fmt(n.totals.grossJual)}</span></div>
+          <div class="line"><span>${diskonLabel}</span><span>– ${fmt(n.totals.diskon)}</span></div>
+          <div class="line grand"><span>Total Bayar</span><span>${fmt(n.totals.tagihan)}</span></div>
+        </div>
+        ${n.catatan ? `<div style="margin-top:14px;font-size:12px;"><em>Catatan: ${escapeHtml(n.catatan)}</em></div>` : ''}
+        <div class="print-footer">
+          <div class="sign-box"><div class="sign-line">Mekanik</div></div>
+          <div class="sign-box"><div class="sign-line">Pelanggan</div></div>
+        </div>
+      </div>
+    </div>
+  `;
+  window.print();
+}
+
+function printInternal(){
+  const n = buildNotaObject();
+  if(items.length===0){ showToast('Tambahkan item terlebih dahulu'); return; }
+  const rows = items.map(it=>`
+    <tr>
+      <td>${escapeHtml(it.desc)} <span class="muted" style="font-size:10.5px;">(${it.jenis})</span></td>
+      <td style="text-align:center;">${it.qty}</td>
+      <td style="text-align:right;">${fmt(it.modal)}</td>
+      <td style="text-align:right;">${fmt(it.jual)}</td>
+      <td style="text-align:right;">${fmt(it.qty*(it.jual-it.modal))}</td>
+    </tr>`).join('');
+  const transRow = (n.transJual>0 || n.transModal>0) ? `
+    <tr>
+      <td>${escapeHtml(n.transKet)}</td>
+      <td style="text-align:center;">1</td>
+      <td style="text-align:right;">${fmt(n.transModal)}</td>
+      <td style="text-align:right;">${fmt(n.transJual)}</td>
+      <td style="text-align:right;">${fmt(n.transJual-n.transModal)}</td>
+    </tr>` : '';
+  const diskonLabel = n.diskonTipe==='persen' ? `Diskon (${n.diskonNilai}%)` : 'Diskon';
+  const splitRows = [
+    {label:'Pemilik Usaha', pct:n.split.owner},
+    {label:'Jasa Mekanik AC (' + (n.mekanik||'-') + ')', pct:n.split.mekanik},
+    {label:'Helper (' + (n.helper||'-') + ')', pct:n.split.helper},
+  ].map(r=>`<div class="line"><span>${escapeHtml(r.label)} — ${r.pct}%</span><span>${fmt(n.totals.profit * r.pct/100)}</span></div>`).join('');
+  document.getElementById('printArea').innerHTML = `
+    <div class="nota-print">
+      <div class="nota-head" style="background:var(--gold);">
+        <div>
+          <h1>Slip Internal — Bagi Hasil</h1>
+          <div class="sub">Dokumen internal, tidak untuk pelanggan</div>
+        </div>
+        <div style="text-align:right;font-size:12px;">
+          <div>No. Nota</div>
+          <div style="font-weight:700;font-family:'JetBrains Mono',monospace;">${n.id}</div>
+        </div>
+      </div>
+      <div class="nota-body">
+        <span class="internal-badge">Internal Only</span>
+        <div class="nota-meta">
+          <div><span>Pelanggan</span>${escapeHtml(n.custNama)}</div>
+          <div><span>Tanggal</span>${n.tanggal}</div>
+        </div>
+        <table class="print-table">
+          <thead><tr><th>Deskripsi</th><th style="text-align:center;">Qty</th><th style="text-align:right;">Modal</th><th style="text-align:right;">Jual</th><th style="text-align:right;">Laba</th></tr></thead>
+          <tbody>${rows}${transRow}</tbody>
+        </table>
+        <div class="print-total-box">
+          <div class="line"><span>Total Modal</span><span>${fmt(n.totals.totalModal)}</span></div>
+          <div class="line"><span>Subtotal Jual</span><span>${fmt(n.totals.grossJual)}</span></div>
+          <div class="line"><span>${diskonLabel}</span><span>– ${fmt(n.totals.diskon)}</span></div>
+          <div class="line"><span>Total Tagihan</span><span>${fmt(n.totals.tagihan)}</span></div>
+          <div class="line grand"><span>Profit Bersih</span><span>${fmt(n.totals.profit)}</span></div>
+        </div>
+        <div style="margin-top:18px;font-weight:700;font-size:13px;color:var(--teal-deep);">Pembagian Profit</div>
+        <div class="print-total-box" style="margin-top:6px;">
+          ${splitRows}
+        </div>
+        <div class="print-footer">
+          <div class="sign-box"><div class="sign-line">Pemilik</div></div>
+          <div class="sign-box"><div class="sign-line">Mekanik</div></div>
+          <div class="sign-box"><div class="sign-line">Helper</div></div>
+        </div>
+      </div>
+    </div>
+  `;
+  window.print();
+}
+
+(async function init(){
+  await loadDefaults();
+  await loadMasterItems();
+  resetForm(true);
+})();
+</script>
+</body>
+</html>
