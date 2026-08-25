@@ -566,12 +566,33 @@ function escapeHtml(s){
 }
 
 /* ---------- MASTER DATA ---------- */
+/* Optimis + cache lokal (localStorage) supaya buka tab & input master terasa instan,
+   tanpa menunggu round-trip ke Apps Script setiap kali. Data sebenarnya tetap di Spreadsheet. */
+
+const MASTER_CACHE_KEY = 'coolmax_master_cache_v1';
+
+function loadMasterCache(){
+  try{
+    const raw = localStorage.getItem(MASTER_CACHE_KEY);
+    if(raw) masterItems = JSON.parse(raw);
+  }catch(e){ /* abaikan, akan diisi dari server */ }
+}
+function saveMasterCache(){
+  try{ localStorage.setItem(MASTER_CACHE_KEY, JSON.stringify(masterItems)); }catch(e){}
+}
 
 async function loadMasterItems(){
+  // 1) tampilkan cache dulu (instan, 0ms) kalau ada, sambil data asli diambil di background
+  loadMasterCache();
+  if(masterItems.length){ renderMasterList(); renderRooms(); }
+  // 2) sinkron ke data terbaru dari spreadsheet
   try{
     const res = await apiGet('getMaster');
     masterItems = Array.isArray(res) ? res.map(m=>({...m, modal:Number(m.modal)||0, jual:Number(m.jual)||0})) : [];
-  }catch(e){ masterItems = []; showToast('Gagal memuat master dari spreadsheet'); }
+    saveMasterCache();
+  }catch(e){
+    if(masterItems.length===0) showToast('Gagal memuat master dari spreadsheet');
+  }
 }
 
 async function addMasterItem(){
@@ -582,25 +603,40 @@ async function addMasterItem(){
   if(!nama){ showToast('Isi nama item terlebih dahulu'); return; }
   const id = 'm' + Date.now() + Math.floor(Math.random()*1000);
   const item = {id, jenis, nama, modal, jual};
+
+  // Update tampilan LANGSUNG (optimis) — tidak menunggu server dulu
+  masterItems.push(item);
+  saveMasterCache();
+  document.getElementById('mNewNama').value = '';
+  document.getElementById('mNewModal').value = 0;
+  document.getElementById('mNewJual').value = 0;
+  renderMasterList();
+  showToast('Item master ditambahkan');
+
+  // Simpan ke spreadsheet di belakang layar; batalkan tampilan kalau gagal
   try{
     await apiPost('saveMaster', {data:item});
-    masterItems.push(item);
-    document.getElementById('mNewNama').value = '';
-    document.getElementById('mNewModal').value = 0;
-    document.getElementById('mNewJual').value = 0;
+  }catch(e){
+    masterItems = masterItems.filter(m=>m.id!==id);
+    saveMasterCache();
     renderMasterList();
-    showToast('Item master ditambahkan');
-  }catch(e){ showToast('Gagal menyimpan ke spreadsheet'); }
+    showToast('Gagal menyimpan ke spreadsheet, item dibatalkan');
+  }
 }
 
 async function deleteMasterItem(id){
   if(!confirm('Hapus item master ini?')) return;
+  const backup = masterItems.find(m=>m.id===id);
+  masterItems = masterItems.filter(m=>m.id!==id);
+  saveMasterCache();
+  renderMasterList();
+  showToast('Item master dihapus');
   try{
     await apiPost('deleteMaster', {id});
-    masterItems = masterItems.filter(m=>m.id!==id);
-    renderMasterList();
-    showToast('Item master dihapus');
-  }catch(e){ showToast('Gagal menghapus di spreadsheet'); }
+  }catch(e){
+    if(backup){ masterItems.push(backup); saveMasterCache(); renderMasterList(); }
+    showToast('Gagal menghapus di spreadsheet, item dikembalikan');
+  }
 }
 
 async function editMasterItem(id){
@@ -612,14 +648,21 @@ async function editMasterItem(id){
   if(modal===null) return;
   const jual = prompt('Harga jual (Rp):', m.jual);
   if(jual===null) return;
+  const backup = {...m};
   m.nama = nama.trim() || m.nama;
   m.modal = Number(modal)||0;
   m.jual = Number(jual)||0;
+  saveMasterCache();
+  renderMasterList();
+  showToast('Item master diperbarui');
   try{
     await apiPost('saveMaster', {data:m});
+  }catch(e){
+    Object.assign(m, backup);
+    saveMasterCache();
     renderMasterList();
-    showToast('Item master diperbarui');
-  }catch(e){ showToast('Gagal menyimpan perubahan'); }
+    showToast('Gagal menyimpan perubahan, dikembalikan ke semula');
+  }
 }
 
 function renderMasterList(){
@@ -1122,6 +1165,7 @@ async function loadRekap(){
   const byMekanik = {}; // nama -> {jasaProfit, jasaShare, partProfit, partShare, jumlahItem}
   const byHelper = {};
   let totalJasaProfitPeriode = 0, totalPartProfitPeriode = 0;
+  let ownerJasaShare = 0, ownerPartShare = 0;
   const detailRows = [];
 
   function bump(map, nama, field, val){
@@ -1145,24 +1189,27 @@ async function loadRekap(){
 
       const mekShare = profit * (sp.mekanik||0) / 100;
       const helpShare = profit * (sp.helper||0) / 100;
+      const ownShare = profit * (sp.owner||0) / 100;
 
       if(isPart){
         bump(byMekanik, mekanikNama, 'partProfit', profit);
         bump(byMekanik, mekanikNama, 'partShare', mekShare);
         if(helperNama){ bump(byHelper, helperNama, 'partProfit', profit); bump(byHelper, helperNama, 'partShare', helpShare); }
         totalPartProfitPeriode += profit;
+        ownerPartShare += ownShare;
       } else {
         bump(byMekanik, mekanikNama, 'jasaProfit', profit);
         bump(byMekanik, mekanikNama, 'jasaShare', mekShare);
         if(helperNama){ bump(byHelper, helperNama, 'jasaProfit', profit); bump(byHelper, helperNama, 'jasaShare', helpShare); }
         totalJasaProfitPeriode += profit;
+        ownerJasaShare += ownShare;
       }
       bump(byMekanik, mekanikNama, 'jumlahItem', 1);
 
       detailRows.push({
         tanggal: tgl, ruang: it.ruang||'-', notaId: nota.id, cust: nota.custNama,
         jenis: it.jenis, desc: it.desc, profit, mekanik: mekanikNama, mekShare,
-        helper: helperNama, helpShare
+        helper: helperNama, helpShare, ownShare
       });
     });
 
@@ -1174,14 +1221,16 @@ async function loadRekap(){
         const sp = split.jasa;
         const mekShare = transProfit * (sp.mekanik||0)/100;
         const helpShare = transProfit * (sp.helper||0)/100;
+        const ownShare = transProfit * (sp.owner||0)/100;
         bump(byMekanik, mekanikNama, 'jasaProfit', transProfit);
         bump(byMekanik, mekanikNama, 'jasaShare', mekShare);
         if(helperNama){ bump(byHelper, helperNama, 'jasaProfit', transProfit); bump(byHelper, helperNama, 'jasaShare', helpShare); }
         totalJasaProfitPeriode += transProfit;
+        ownerJasaShare += ownShare;
         detailRows.push({
           tanggal: tglTrans, ruang:'—', notaId: nota.id, cust: nota.custNama,
           jenis:'Transport', desc: nota.transKet||'Transport', profit: transProfit,
-          mekanik: mekanikNama, mekShare, helper: helperNama, helpShare
+          mekanik: mekanikNama, mekShare, helper: helperNama, helpShare, ownShare
         });
       }
     }
@@ -1189,7 +1238,12 @@ async function loadRekap(){
 
   detailRows.sort((a,b)=> a.tanggal < b.tanggal ? -1 : (a.tanggal>b.tanggal?1:0));
 
-  renderRekapResult({byMekanik, byHelper, totalJasaProfitPeriode, totalPartProfitPeriode, detailRows, dari, sampai});
+  renderRekapResult({byMekanik, byHelper, totalJasaProfitPeriode, totalPartProfitPeriode, ownerJasaShare, ownerPartShare, detailRows, dari, sampai});
+}
+
+function pct(part, total){
+  if(!total) return 0;
+  return Math.round(part/total*1000)/10;
 }
 
 function renderRekapResult(d){
@@ -1204,14 +1258,31 @@ function renderRekapResult(d){
 
   const totalMekanikPayout = mekanikNames.reduce((s,n)=> s + d.byMekanik[n].jasaShare + d.byMekanik[n].partShare, 0);
   const totalHelperPayout = helperNames.reduce((s,n)=> s + d.byHelper[n].jasaShare + d.byHelper[n].partShare, 0);
+  const totalOwnerPayout = d.ownerJasaShare + d.ownerPartShare;
 
   let html = `<div class="card">
     <h2><span class="num">Σ</span> Ringkasan Periode ${d.dari} s/d ${d.sampai}</h2>
     <div class="kpi-row">
       <div class="kpi-box"><div class="kpi-label">Total Profit Jasa</div><div class="kpi-value">${fmt(d.totalJasaProfitPeriode)}</div></div>
       <div class="kpi-box"><div class="kpi-label">Total Profit Sparepart</div><div class="kpi-value">${fmt(d.totalPartProfitPeriode)}</div></div>
-      <div class="kpi-box"><div class="kpi-label">Total Dibayarkan ke Mekanik</div><div class="kpi-value">${fmt(totalMekanikPayout)}</div></div>
-      <div class="kpi-box"><div class="kpi-label">Total Dibayarkan ke Helper</div><div class="kpi-value">${fmt(totalHelperPayout)}</div></div>
+    </div>
+    <div class="split-group-title">Porsi Pembagian Hasil — Kelompok Jasa <span class="split-group-amount">${fmt(d.totalJasaProfitPeriode)}</span></div>
+    <div class="recap-summary-card" style="background:#fff;">
+      <div class="rline"><span class="muted">Pemilik Usaha</span><span class="mono">${fmt(d.ownerJasaShare)} <span class="muted">(${pct(d.ownerJasaShare,d.totalJasaProfitPeriode)}%)</span></span></div>
+      <div class="rline"><span class="muted">Seluruh Mekanik</span><span class="mono">${fmt(mekanikNames.reduce((s,n)=>s+d.byMekanik[n].jasaShare,0))} <span class="muted">(${pct(mekanikNames.reduce((s,n)=>s+d.byMekanik[n].jasaShare,0), d.totalJasaProfitPeriode)}%)</span></span></div>
+      <div class="rline"><span class="muted">Seluruh Helper</span><span class="mono">${fmt(helperNames.reduce((s,n)=>s+d.byHelper[n].jasaShare,0))} <span class="muted">(${pct(helperNames.reduce((s,n)=>s+d.byHelper[n].jasaShare,0), d.totalJasaProfitPeriode)}%)</span></span></div>
+    </div>
+    <div class="split-group-title">Porsi Pembagian Hasil — Kelompok Sparepart <span class="split-group-amount">${fmt(d.totalPartProfitPeriode)}</span></div>
+    <div class="recap-summary-card" style="background:#fff;">
+      <div class="rline"><span class="muted">Pemilik Usaha</span><span class="mono">${fmt(d.ownerPartShare)} <span class="muted">(${pct(d.ownerPartShare,d.totalPartProfitPeriode)}%)</span></span></div>
+      <div class="rline"><span class="muted">Seluruh Mekanik</span><span class="mono">${fmt(mekanikNames.reduce((s,n)=>s+d.byMekanik[n].partShare,0))} <span class="muted">(${pct(mekanikNames.reduce((s,n)=>s+d.byMekanik[n].partShare,0), d.totalPartProfitPeriode)}%)</span></span></div>
+      <div class="rline"><span class="muted">Seluruh Helper</span><span class="mono">${fmt(helperNames.reduce((s,n)=>s+d.byHelper[n].partShare,0))} <span class="muted">(${pct(helperNames.reduce((s,n)=>s+d.byHelper[n].partShare,0), d.totalPartProfitPeriode)}%)</span></span></div>
+    </div>
+    <div class="kpi-row" style="margin-top:14px;">
+      <div class="kpi-box"><div class="kpi-label">Total ke Pemilik Usaha</div><div class="kpi-value">${fmt(totalOwnerPayout)}</div></div>
+      <div class="kpi-box"><div class="kpi-label">Total ke Mekanik</div><div class="kpi-value">${fmt(totalMekanikPayout)}</div></div>
+      <div class="kpi-box"><div class="kpi-label">Total ke Helper</div><div class="kpi-value">${fmt(totalHelperPayout)}</div></div>
+      <div class="kpi-box"><div class="kpi-label">Total Profit Periode</div><div class="kpi-value">${fmt(d.totalJasaProfitPeriode+d.totalPartProfitPeriode)}</div></div>
     </div>
   </div>`;
 
@@ -1224,9 +1295,9 @@ function renderRekapResult(d){
       html += `<div class="recap-summary-card">
         <div class="rname">${escapeHtml(nama)} <span class="muted" style="font-weight:400;font-size:12px;">(${r.jumlahItem} pekerjaan)</span></div>
         <div class="rline"><span class="muted">Profit Jasa dikerjakan</span><span class="mono">${fmt(r.jasaProfit)}</span></div>
-        <div class="rline"><span class="muted">Bagian dari Jasa</span><span class="mono">${fmt(r.jasaShare)}</span></div>
+        <div class="rline"><span class="muted">Bagian dari Jasa</span><span class="mono">${fmt(r.jasaShare)} <span class="muted">(${pct(r.jasaShare,d.totalJasaProfitPeriode)}% dari total jasa)</span></span></div>
         <div class="rline"><span class="muted">Profit Sparepart terkait</span><span class="mono">${fmt(r.partProfit)}</span></div>
-        <div class="rline"><span class="muted">Bagian dari Sparepart</span><span class="mono">${fmt(r.partShare)}</span></div>
+        <div class="rline"><span class="muted">Bagian dari Sparepart</span><span class="mono">${fmt(r.partShare)} <span class="muted">(${pct(r.partShare,d.totalPartProfitPeriode)}% dari total sparepart)</span></span></div>
         <div class="rline grand"><span>Total Diterima</span><span class="mono">${fmt(r.jasaShare + r.partShare)}</span></div>
       </div>`;
     });
@@ -1241,8 +1312,8 @@ function renderRekapResult(d){
       const r = d.byHelper[nama];
       html += `<div class="recap-summary-card">
         <div class="rname">${escapeHtml(nama)}</div>
-        <div class="rline"><span class="muted">Bagian dari Jasa</span><span class="mono">${fmt(r.jasaShare)}</span></div>
-        <div class="rline"><span class="muted">Bagian dari Sparepart</span><span class="mono">${fmt(r.partShare)}</span></div>
+        <div class="rline"><span class="muted">Bagian dari Jasa</span><span class="mono">${fmt(r.jasaShare)} <span class="muted">(${pct(r.jasaShare,d.totalJasaProfitPeriode)}%)</span></span></div>
+        <div class="rline"><span class="muted">Bagian dari Sparepart</span><span class="mono">${fmt(r.partShare)} <span class="muted">(${pct(r.partShare,d.totalPartProfitPeriode)}%)</span></span></div>
         <div class="rline grand"><span>Total Diterima</span><span class="mono">${fmt(r.jasaShare + r.partShare)}</span></div>
       </div>`;
     });
@@ -1251,12 +1322,13 @@ function renderRekapResult(d){
 
   html += `<div class="card"><h2><span class="num">📋</span> Detail Per Ruang / Pekerjaan</h2>
     <div class="recap-table-wrap"><table class="recap-table">
-      <thead><tr><th>Tanggal</th><th>Ruang/Lokasi</th><th>No. Nota</th><th>Pelanggan</th><th>Jenis</th><th>Deskripsi</th><th>Profit</th><th>Mekanik</th><th>Bag. Mekanik</th><th>Helper</th><th>Bag. Helper</th></tr></thead>
+      <thead><tr><th>Tanggal</th><th>Ruang/Lokasi</th><th>No. Nota</th><th>Pelanggan</th><th>Jenis</th><th>Deskripsi</th><th>Profit</th><th>Bag. Owner</th><th>Mekanik</th><th>Bag. Mekanik</th><th>Helper</th><th>Bag. Helper</th></tr></thead>
       <tbody>`;
   d.detailRows.forEach(r=>{
     html += `<tr>
       <td>${r.tanggal}</td><td>${escapeHtml(r.ruang)}</td><td class="mono">${r.notaId}</td><td>${escapeHtml(r.cust||'')}</td>
       <td>${r.jenis}</td><td>${escapeHtml(r.desc||'')}</td><td class="mono">${fmt(r.profit)}</td>
+      <td class="mono">${fmt(r.ownShare)}</td>
       <td>${escapeHtml(r.mekanik)}</td><td class="mono">${fmt(r.mekShare)}</td>
       <td>${escapeHtml(r.helper||'-')}</td><td class="mono">${r.helper?fmt(r.helpShare):'-'}</td>
     </tr>`;
