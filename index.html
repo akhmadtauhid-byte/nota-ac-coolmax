@@ -102,8 +102,18 @@
   .badge-part{background:var(--purple-soft);color:var(--purple);}
   .badge-lain{background:#F1F1F1;color:var(--ink-soft);}
 
-  /* Item cards (Ruang + Tanggal per baris) */
-  .item-card{border:1.5px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;background:var(--frost-2);}
+  /* Room cards (Ruang + Tanggal, berisi banyak item jasa/sparepart) */
+  .room-card{border:2px solid var(--teal);border-radius:14px;padding:16px;margin-bottom:16px;background:#fff;}
+  .room-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .room-card-head .room-tag{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12.5px;color:var(--teal-deep);background:var(--frost);padding:4px 10px;border-radius:6px;}
+  .room-card-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:10px;margin-bottom:14px;}
+  @media(max-width:640px){.room-card-grid{grid-template-columns:1fr;}}
+  .room-card label{font-size:10.5px;margin-bottom:3px;}
+  .room-card input, .room-card select{background:var(--frost-2);font-size:13.5px;}
+  .room-items-title{font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;margin:4px 0 8px;}
+
+  /* Item cards (baris jasa/sparepart di dalam ruang) */
+  .item-card{border:1.5px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px;background:var(--frost-2);}
   .item-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
   .item-card-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:10px;margin-bottom:8px;}
   .item-card-grid3{display:grid;grid-template-columns:0.7fr 1fr 1fr;gap:10px;}
@@ -111,6 +121,7 @@
   .item-card label{font-size:10.5px;margin-bottom:3px;}
   .item-card input, .item-card select{background:#fff;font-size:13px;padding:8px 10px;}
   .item-card-subtotal{text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--teal-deep);margin-top:8px;font-size:13.5px;}
+  .room-subtotal{text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--gold);margin-top:10px;padding-top:10px;border-top:1.5px dashed var(--line);font-size:14px;}
   .row-remove{
     background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:4px 8px;
     display:flex;align-items:center;gap:4px;border-radius:6px;font-weight:600;font-size:12px;
@@ -320,10 +331,10 @@
     </div>
 
     <div class="card">
-      <h2><span class="num">2</span> Rincian Jasa &amp; Sparepart</h2>
-      <p class="hint">Setiap baris bisa punya <strong>ruang/lokasi</strong> dan <strong>tanggal perbaikan</strong> sendiri — cocok untuk 1 nota yang mencakup beberapa ruangan/hari berbeda. Pilih dari master untuk mengisi otomatis harga, atau pakai "Input Manual".</p>
-      <div id="itemsBody"></div>
-      <button class="add-row-btn" onclick="addItem()">+ Tambah Baris Pekerjaan</button>
+      <h2><span class="num">2</span> Rincian Jasa &amp; Sparepart per Ruang</h2>
+      <p class="hint">Kelompokkan pekerjaan per <strong>ruang/lokasi</strong> dan <strong>tanggal perbaikan</strong>. Dalam satu ruang, boleh input <strong>beberapa jasa dan sparepart sekaligus</strong> — cukup isi ruang/tanggal sekali, lalu tambahkan item sebanyak yang dikerjakan di situ.</p>
+      <div id="roomsBody"></div>
+      <button class="add-row-btn" onclick="addRoom()">+ Tambah Ruang / Lokasi</button>
     </div>
 
     <div class="card">
@@ -518,7 +529,8 @@ async function apiPost(action, payload){
   return await res.json();
 }
 
-let items = [];
+let rooms = []; // [{id, ruang, tanggalKerja, items:[{id, masterId, jenis, desc, qty, modal, jual}]}]
+let roomSeq = 0;
 let itemSeq = 0;
 let currentSplitJasa = { owner: 40, mekanik: 40, helper: 20 };
 let currentSplitPart = { owner: 70, mekanik: 20, helper: 10 };
@@ -655,22 +667,52 @@ function masterOptionsHtml(selectedId){
   return html;
 }
 
-/* ---------- ITEM ROWS (Ruang + Tanggal per baris) ---------- */
+/* ---------- RUANG (berisi banyak baris jasa/sparepart) ---------- */
 
-function addItem(prefill){
-  const id = 'it' + (itemSeq++);
-  items.push(prefill ? {...prefill, id} : {
-    id, masterId:'', jenis:'Jasa', desc:'', ruang:'', tanggalKerja: todayISO(),
-    qty:1, modal:0, jual:0
-  });
-  renderItems();
+function addRoom(prefillRoom){
+  const id = 'rm' + (roomSeq++);
+  if(prefillRoom){
+    rooms.push({...prefillRoom, id});
+  } else {
+    rooms.push({
+      id, ruang:'', tanggalKerja: todayISO(),
+      items: [ newItem('Jasa') ]
+    });
+  }
+  renderRooms();
 }
-function removeItem(id){
-  items = items.filter(i=>i.id!==id);
-  renderItems();
+function removeRoom(roomId){
+  if(rooms.length<=1){ showToast('Minimal harus ada 1 ruang'); return; }
+  rooms = rooms.filter(r=>r.id!==roomId);
+  renderRooms();
 }
-function updateItem(id, field, val){
-  const it = items.find(i=>i.id===id);
+function updateRoomField(roomId, field, val){
+  const r = rooms.find(x=>x.id===roomId);
+  if(!r) return;
+  r[field] = val;
+  renderRooms();
+}
+
+function newItem(jenis){
+  return { id:'it'+(itemSeq++), masterId:'', jenis: jenis||'Jasa', desc:'', qty:1, modal:0, jual:0 };
+}
+function addItemToRoom(roomId, jenis){
+  const r = rooms.find(x=>x.id===roomId);
+  if(!r) return;
+  r.items.push(newItem(jenis));
+  renderRooms();
+}
+function removeItemFromRoom(roomId, itemId){
+  const r = rooms.find(x=>x.id===roomId);
+  if(!r) return;
+  if(r.items.length<=1){ showToast('Minimal harus ada 1 item per ruang, hapus ruangnya saja jika tidak dipakai'); return; }
+  r.items = r.items.filter(i=>i.id!==itemId);
+  renderRooms();
+}
+function updateItemInRoom(roomId, itemId, field, val){
+  const r = rooms.find(x=>x.id===roomId);
+  if(!r) return;
+  const it = r.items.find(i=>i.id===itemId);
   if(!it) return;
   if(field==='masterId'){
     it.masterId = val;
@@ -681,59 +723,90 @@ function updateItem(id, field, val){
   } else {
     it[field] = (field==='qty'||field==='modal'||field==='jual') ? Number(val)||0 : val;
   }
-  renderItems();
+  renderRooms();
 }
 
-function renderItems(){
-  const body = document.getElementById('itemsBody');
+// Ratakan struktur ruang -> array item flat (dengan ruang & tanggalKerja terselip per item)
+// Dipakai untuk kalkulasi total, simpan ke spreadsheet, dan cetak.
+function flattenItems(){
+  const flat = [];
+  rooms.forEach(r=>{
+    r.items.forEach(it=>{
+      flat.push({...it, ruang:r.ruang, tanggalKerja:r.tanggalKerja});
+    });
+  });
+  return flat;
+}
+
+function renderRooms(){
+  const body = document.getElementById('roomsBody');
   body.innerHTML = '';
-  items.forEach((it, idx)=>{
-    const subtotal = it.qty * it.jual;
-    const badgeClass = it.jenis==='Jasa' ? 'badge-jasa' : (it.jenis==='Sparepart' ? 'badge-part' : 'badge-lain');
-    const div = document.createElement('div');
-    div.className = 'item-card';
-    div.innerHTML = `
-      <div class="item-card-top">
-        <span class="badge-jenis ${badgeClass}">${it.jenis} · Baris ${idx+1}</span>
-        <button class="row-remove" onclick="removeItem('${it.id}')">✕ Hapus</button>
-      </div>
-      <div class="item-card-grid">
-        <div class="field" style="margin-bottom:0;">
-          <label>Pilih dari Master</label>
-          <select onchange="updateItem('${it.id}','masterId',this.value)">${masterOptionsHtml(it.masterId)}</select>
+  rooms.forEach((r, ridx)=>{
+    const roomSubtotal = r.items.reduce((s,it)=> s + it.qty*it.jual, 0);
+    const roomDiv = document.createElement('div');
+    roomDiv.className = 'room-card';
+
+    const itemsHtml = r.items.map((it, iidx)=>{
+      const subtotal = it.qty * it.jual;
+      const badgeClass = it.jenis==='Jasa' ? 'badge-jasa' : (it.jenis==='Sparepart' ? 'badge-part' : 'badge-lain');
+      return `
+      <div class="item-card">
+        <div class="item-card-top">
+          <span class="badge-jenis ${badgeClass}">${it.jenis} · Item ${iidx+1}</span>
+          <button class="row-remove" onclick="removeItemFromRoom('${r.id}','${it.id}')">✕ Hapus</button>
         </div>
-        <div class="field" style="margin-bottom:0;">
-          <label>Deskripsi</label>
-          <input type="text" value="${escapeHtml(it.desc)}" placeholder="Deskripsi pekerjaan" onchange="updateItem('${it.id}','desc',this.value)">
+        <div class="item-card-grid">
+          <div class="field" style="margin-bottom:0;">
+            <label>Pilih dari Master</label>
+            <select onchange="updateItemInRoom('${r.id}','${it.id}','masterId',this.value)">${masterOptionsHtml(it.masterId)}</select>
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Deskripsi</label>
+            <input type="text" value="${escapeHtml(it.desc)}" placeholder="Deskripsi pekerjaan" onchange="updateItemInRoom('${r.id}','${it.id}','desc',this.value)">
+          </div>
         </div>
+        <div class="item-card-grid3">
+          <div class="field" style="margin-bottom:0;">
+            <label>Qty</label>
+            <input type="number" min="0" value="${it.qty}" onchange="updateItemInRoom('${r.id}','${it.id}','qty',this.value)">
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Modal/unit</label>
+            <input type="number" min="0" value="${it.modal}" onchange="updateItemInRoom('${r.id}','${it.id}','modal',this.value)">
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Jual/unit</label>
+            <input type="number" min="0" value="${it.jual}" onchange="updateItemInRoom('${r.id}','${it.id}','jual',this.value)">
+          </div>
+        </div>
+        <div class="item-card-subtotal">Subtotal: ${fmt(subtotal)}</div>
+      </div>`;
+    }).join('');
+
+    roomDiv.innerHTML = `
+      <div class="room-card-head">
+        <span class="room-tag">📍 Ruang ${ridx+1}</span>
+        <button class="row-remove" onclick="removeRoom('${r.id}')">✕ Hapus Ruang</button>
       </div>
-      <div class="item-card-grid">
+      <div class="room-card-grid">
         <div class="field" style="margin-bottom:0;">
           <label>Ruang / Lokasi</label>
-          <input type="text" value="${escapeHtml(it.ruang)}" placeholder="cth: Ruang Server, Kamar 2, Lobby" onchange="updateItem('${it.id}','ruang',this.value)">
+          <input type="text" value="${escapeHtml(r.ruang)}" placeholder="cth: Ruang Server, Kamar 2, Lobby" onchange="updateRoomField('${r.id}','ruang',this.value)">
         </div>
         <div class="field" style="margin-bottom:0;">
           <label>Tanggal Perbaikan</label>
-          <input type="date" value="${it.tanggalKerja||''}" onchange="updateItem('${it.id}','tanggalKerja',this.value)">
+          <input type="date" value="${r.tanggalKerja||''}" onchange="updateRoomField('${r.id}','tanggalKerja',this.value)">
         </div>
       </div>
-      <div class="item-card-grid3">
-        <div class="field" style="margin-bottom:0;">
-          <label>Qty</label>
-          <input type="number" min="0" value="${it.qty}" onchange="updateItem('${it.id}','qty',this.value)">
-        </div>
-        <div class="field" style="margin-bottom:0;">
-          <label>Modal/unit</label>
-          <input type="number" min="0" value="${it.modal}" onchange="updateItem('${it.id}','modal',this.value)">
-        </div>
-        <div class="field" style="margin-bottom:0;">
-          <label>Jual/unit</label>
-          <input type="number" min="0" value="${it.jual}" onchange="updateItem('${it.id}','jual',this.value)">
-        </div>
+      <div class="room-items-title">Jasa &amp; Sparepart di ruang ini</div>
+      <div>${itemsHtml}</div>
+      <div style="display:flex;gap:8px;">
+        <button class="add-row-btn" style="margin-top:0;" onclick="addItemToRoom('${r.id}','Jasa')">+ Tambah Jasa</button>
+        <button class="add-row-btn" style="margin-top:0;" onclick="addItemToRoom('${r.id}','Sparepart')">+ Tambah Sparepart</button>
       </div>
-      <div class="item-card-subtotal">Subtotal: ${fmt(subtotal)}</div>
+      <div class="room-subtotal">Subtotal Ruang: ${fmt(roomSubtotal)}</div>
     `;
-    body.appendChild(div);
+    body.appendChild(roomDiv);
   });
   recalc();
 }
@@ -742,7 +815,7 @@ function renderItems(){
 
 function calcTotals(){
   let jasaModal=0, jasaJual=0, partModal=0, partJual=0;
-  items.forEach(it=>{
+  flattenItems().forEach(it=>{
     const m = it.qty*it.modal, j = it.qty*it.jual;
     if(it.jenis==='Sparepart'){ partModal+=m; partJual+=j; }
     else { jasaModal+=m; jasaJual+=j; } // Jasa & Lainnya masuk kelompok Jasa
@@ -840,7 +913,8 @@ function genNotaId(){
 }
 
 function resetForm(newNota){
-  items = [];
+  rooms = [];
+  roomSeq = 0;
   itemSeq = 0;
   editingId = null;
   document.getElementById('notaId').value = newNota ? genNotaId() : '';
@@ -856,7 +930,7 @@ function resetForm(newNota){
   document.getElementById('diskonTipe').value = 'rp';
   document.getElementById('diskonNilai').value = 0;
   document.getElementById('catatan').value = '';
-  addItem({masterId:'', jenis:'Jasa', desc:'Jasa Cuci / Service AC', ruang:'', tanggalKerja:todayISO(), qty:1, modal:0, jual:0});
+  addRoom();
 }
 
 async function saveDefaults(){
@@ -908,7 +982,7 @@ function buildNotaObject(){
     custHp: document.getElementById('custHp').value,
     custAlamat: document.getElementById('custAlamat').value,
     catatan: document.getElementById('catatan').value,
-    items: items,
+    items: flattenItems(),
     transKet: document.getElementById('transKet').value,
     transModal: t.transModal,
     transJual: t.transJual,
@@ -924,7 +998,7 @@ async function saveNota(){
   const nota = buildNotaObject();
   if(!nota.id){ showToast('No. Nota kosong'); return; }
   if(!nota.custNama){ showToast('Isi nama pelanggan terlebih dahulu'); return; }
-  if(items.length===0){ showToast('Tambahkan minimal 1 baris item'); return; }
+  if(nota.items.length===0){ showToast('Tambahkan minimal 1 baris item'); return; }
   try{
     await apiPost('saveNota', {data:nota});
     showToast('Nota ' + nota.id + ' tersimpan ke spreadsheet');
@@ -969,10 +1043,23 @@ async function openNota(id){
   try{
     const n = await apiGet('getNota', {id});
     if(!n || n.error){ showToast('Nota tidak ditemukan'); return; }
-    items = (n.items||[]).map(it=>({
-      ...it, id: 'it'+(itemSeq++),
-      ruang: it.ruang || '', tanggalKerja: it.tanggalKerja || n.tanggal || todayISO()
-    }));
+    // Kelompokkan kembali item flat (dari data lama/tersimpan) menjadi ruang-ruang
+    // berdasarkan pasangan ruang+tanggalKerja yang sama.
+    rooms = [];
+    roomSeq = 0; itemSeq = 0;
+    const groupMap = {};
+    (n.items||[]).forEach(it=>{
+      const ruang = it.ruang || '';
+      const tgl = it.tanggalKerja || n.tanggal || todayISO();
+      const key = ruang + '|' + tgl;
+      if(!groupMap[key]){
+        const room = { id:'rm'+(roomSeq++), ruang, tanggalKerja: tgl, items: [] };
+        groupMap[key] = room;
+        rooms.push(room);
+      }
+      groupMap[key].items.push({ ...it, id:'it'+(itemSeq++) });
+    });
+    if(rooms.length===0) rooms.push({ id:'rm'+(roomSeq++), ruang:'', tanggalKerja: n.tanggal||todayISO(), items:[newItem('Jasa')] });
     document.getElementById('notaId').value = n.id;
     document.getElementById('notaTanggal').value = n.tanggal;
     document.getElementById('mekanikNama').value = n.mekanik||'';
@@ -995,7 +1082,7 @@ async function openNota(id){
       currentSplitPart = {...n.split};
     }
     editingId = n.id;
-    renderItems();
+    renderRooms();
     switchTab('buat');
     showToast('Nota ' + id + ' dimuat untuk diedit');
   }catch(e){ showToast('Gagal membuka nota'); }
@@ -1183,8 +1270,8 @@ function renderRekapResult(d){
 
 function printCustomer(){
   const n = buildNotaObject();
-  if(items.length===0){ showToast('Tambahkan item terlebih dahulu'); return; }
-  const rows = items.map(it=>`
+  if(n.items.length===0){ showToast('Tambahkan item terlebih dahulu'); return; }
+  const rows = n.items.map(it=>`
     <tr>
       <td>${escapeHtml(it.desc)}<br><span class="muted" style="font-size:10px;">${escapeHtml(it.ruang||'')}${it.ruang&&it.tanggalKerja?' · ':''}${it.tanggalKerja||''}</span></td>
       <td style="text-align:center;">${it.qty}</td>
@@ -1243,8 +1330,8 @@ function printCustomer(){
 
 function printInternal(){
   const n = buildNotaObject();
-  if(items.length===0){ showToast('Tambahkan item terlebih dahulu'); return; }
-  const rows = items.map(it=>`
+  if(n.items.length===0){ showToast('Tambahkan item terlebih dahulu'); return; }
+  const rows = n.items.map(it=>`
     <tr>
       <td>${escapeHtml(it.desc)}<br><span class="muted" style="font-size:10px;">${escapeHtml(it.ruang||'')}${it.ruang&&it.tanggalKerja?' · ':''}${it.tanggalKerja||''}</span></td>
       <td style="text-align:center;">${it.qty}</td>
