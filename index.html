@@ -1609,6 +1609,10 @@ function downloadRekapWord(){
 
   downloadWordDoc('Rekap Penggajian', body, `Rekap-Penggajian_${d.dari}_${d.sampai}.doc`);
 }
+
+/* ---------- LAPORAN HASIL PEKERJAAN (galeri foto/dokumen) ---------- */
+
+async function loadLaporan(){
   const dari = document.getElementById('laporanDari').value;
   const sampai = document.getElementById('laporanSampai').value;
   const cari = document.getElementById('laporanCari').value.trim().toLowerCase();
