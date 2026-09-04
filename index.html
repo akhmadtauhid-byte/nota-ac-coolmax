@@ -122,6 +122,27 @@
   .item-card input, .item-card select{background:#fff;font-size:13px;padding:8px 10px;}
   .item-card-subtotal{text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--teal-deep);margin-top:8px;font-size:13.5px;}
   .room-subtotal{text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--gold);margin-top:10px;padding-top:10px;border-top:1.5px dashed var(--line);font-size:14px;}
+
+  /* Lampiran foto/dokumen */
+  .lampiran-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+  .lampiran-thumb{position:relative;width:84px;height:84px;border-radius:10px;overflow:hidden;border:1.5px solid var(--line);background:var(--frost-2);}
+  .lampiran-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .lampiran-thumb.lampiran-loading{display:flex;align-items:center;justify-content:center;font-size:10.5px;text-align:center;color:var(--ink-soft);}
+  .lampiran-thumb.lampiran-doc a{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;font-size:20px;text-decoration:none;color:var(--ink-soft);padding:4px;}
+  .lampiran-thumb.lampiran-doc span{font-size:9px;line-height:1.2;margin-top:4px;word-break:break-all;color:var(--ink-soft);}
+  .lampiran-remove{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(11,32,39,.75);color:#fff;border:none;font-size:10px;cursor:pointer;line-height:1;}
+  .upload-btn{
+    display:inline-flex;align-items:center;gap:6px;border:1.5px dashed var(--cyan);background:var(--frost-2);color:var(--teal-deep);
+    padding:9px 14px;border-radius:9px;font-weight:600;font-size:12.5px;cursor:pointer;
+  }
+  .upload-btn:hover{background:var(--frost);}
+
+  /* Galeri laporan (tab Laporan Pekerjaan) */
+  .laporan-card{border:1.5px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;background:#fff;}
+  .laporan-card-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+  .laporan-card-head .ltitle{font-weight:700;font-size:14px;color:var(--teal-deep);}
+  .laporan-card-head .lmeta{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+  .laporan-catatan{font-size:12.8px;color:var(--ink);margin-bottom:10px;background:var(--frost-2);padding:8px 10px;border-radius:8px;}
   .row-remove{
     background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:4px 8px;
     display:flex;align-items:center;gap:4px;border-radius:6px;font-weight:600;font-size:12px;
@@ -289,6 +310,7 @@
     <button class="tab-btn" data-tab="riwayat" onclick="switchTab('riwayat')">Riwayat Nota</button>
     <button class="tab-btn" data-tab="master" onclick="switchTab('master')">Master Jasa &amp; Sparepart</button>
     <button class="tab-btn" data-tab="rekap" onclick="switchTab('rekap')">Rekap Penggajian</button>
+    <button class="tab-btn" data-tab="laporan" onclick="switchTab('laporan')">Laporan Pekerjaan</button>
     <button class="tab-btn" data-tab="pengaturan" onclick="switchTab('pengaturan')">Pengaturan Bagi Hasil</button>
   </div>
 
@@ -478,6 +500,30 @@
     <div id="rekapResult"></div>
   </div>
 
+  <!-- TAB: LAPORAN PEKERJAAN (galeri foto/dokumen bukti) -->
+  <div id="tab-laporan" style="display:none;">
+    <div class="card">
+      <h2><span class="num">📷</span> Filter Laporan Hasil Pekerjaan</h2>
+      <p class="hint">Menampilkan catatan, foto, dan dokumen bukti pekerjaan berdasarkan tanggal perbaikan per ruang/lokasi.</p>
+      <div class="grid3">
+        <div class="field">
+          <label>Dari Tanggal</label>
+          <input type="date" id="laporanDari">
+        </div>
+        <div class="field">
+          <label>Sampai Tanggal</label>
+          <input type="date" id="laporanSampai">
+        </div>
+        <div class="field">
+          <label>Cari Ruang/Pelanggan/Mekanik (opsional)</label>
+          <input type="text" id="laporanCari" placeholder="cth: Ruang Server, Budi, RSU Allam">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="loadLaporan()">🔍 Tampilkan Laporan</button>
+    </div>
+    <div id="laporanResult"></div>
+  </div>
+
   <!-- TAB: PENGATURAN -->
   <div id="tab-pengaturan" style="display:none;">
     <div class="card">
@@ -530,6 +576,8 @@ async function apiPost(action, payload){
 }
 
 let rooms = []; // [{id, ruang, tanggalKerja, items:[{id, masterId, jenis, desc, qty, modal, jual}]}]
+let lastRekapData = null;
+let lastLaporanData = null;
 let roomSeq = 0;
 let itemSeq = 0;
 let currentSplitJasa = { owner: 40, mekanik: 40, helper: 20 };
@@ -543,6 +591,33 @@ function fmt(n){
 }
 function todayISO(){ return new Date().toISOString().slice(0,10); }
 
+/* ---------- EKSPOR WORD (.doc) ---------- */
+// Membungkus HTML dengan penanda khusus Microsoft Word, supaya file .doc yang
+// dihasilkan bisa langsung dibuka & DIEDIT di Word lengkap dengan tabelnya.
+function downloadWordDoc(title, bodyHtml, filename){
+  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+  <head><meta charset="utf-8"><title>${escapeHtml(title)}</title>
+  <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
+  <style>
+    body{font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#0B2027;}
+    h1{font-size:16pt;color:#0E4F52;margin-bottom:2pt;}
+    h2{font-size:13pt;color:#0E7C86;margin-top:16pt;margin-bottom:6pt;border-bottom:1px solid #0E7C86;padding-bottom:2pt;}
+    .sub{font-size:10pt;color:#42646A;margin-bottom:10pt;}
+    table{border-collapse:collapse;width:100%;margin-bottom:12pt;}
+    th{background:#EAF6F6;border:1px solid #CFE6E6;padding:5pt 7pt;font-size:9.5pt;text-align:left;}
+    td{border:1px solid #CFE6E6;padding:5pt 7pt;font-size:9.5pt;}
+    .num{text-align:right;}
+    .grand td{font-weight:bold;background:#FBF1DC;}
+  </style></head>
+  <body>${bodyHtml}</body></html>`;
+  const blob = new Blob(['\ufeff', html], {type:'application/msword;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function showToast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -551,7 +626,7 @@ function showToast(msg){
 }
 
 function switchTab(name){
-  ['buat','riwayat','master','rekap','pengaturan'].forEach(t=>{
+  ['buat','riwayat','master','rekap','laporan','pengaturan'].forEach(t=>{
     document.getElementById('tab-'+t).style.display = (t===name)?'block':'none';
   });
   document.querySelectorAll('.tab-btn').forEach(b=>{
@@ -715,11 +790,12 @@ function masterOptionsHtml(selectedId){
 function addRoom(prefillRoom){
   const id = 'rm' + (roomSeq++);
   if(prefillRoom){
-    rooms.push({...prefillRoom, id});
+    rooms.push({ lampiran:[], laporanCatatan:'', ...prefillRoom, id});
   } else {
     rooms.push({
       id, ruang:'', tanggalKerja: todayISO(),
-      items: [ newItem('Jasa') ]
+      items: [ newItem('Jasa') ],
+      laporanCatatan: '', lampiran: [] // bukti foto/dokumen hasil pekerjaan
     });
   }
   renderRooms();
@@ -766,6 +842,83 @@ function updateItemInRoom(roomId, itemId, field, val){
   } else {
     it[field] = (field==='qty'||field==='modal'||field==='jual') ? Number(val)||0 : val;
   }
+  renderRooms();
+}
+
+/* ---------- LAPORAN HASIL PEKERJAAN (foto/dokumen bukti) ---------- */
+
+// Kompres gambar di browser (maks 1600px, JPEG 75%) sebelum diunggah, supaya cepat & hemat data.
+function compressImage(file, maxDim, quality){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        let w = img.width, h = img.height;
+        if(w > maxDim || h > maxDim){
+          if(w > h){ h = Math.round(h * maxDim/w); w = maxDim; }
+          else { w = Math.round(w * maxDim/h); h = maxDim; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(dataUrl.split(',')[1]); // base64 tanpa prefix
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+function readAsBase64(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=> resolve(e.target.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleLampiranUpload(roomId, fileInput){
+  const r = rooms.find(x=>x.id===roomId);
+  if(!r) return;
+  const files = Array.from(fileInput.files || []);
+  if(files.length===0) return;
+
+  for(const file of files){
+    const isImage = file.type.startsWith('image/');
+    const tempId = 'up' + Date.now() + Math.floor(Math.random()*1000);
+    r.lampiran.push({ id: tempId, name: file.name, uploading: true, isImage });
+    renderRooms();
+    try{
+      const base64 = isImage ? await compressImage(file, 1600, 0.75) : await readAsBase64(file);
+      const mimeType = isImage ? 'image/jpeg' : file.type;
+      const filename = isImage ? (file.name.replace(/\.[^.]+$/,'') + '.jpg') : file.name;
+      const res = await apiPost('uploadFile', { filename, mimeType, base64 });
+      const idx = r.lampiran.findIndex(l=>l.id===tempId);
+      if(idx>-1){
+        if(res && res.url){
+          r.lampiran[idx] = { id: res.id, name: filename, url: res.url, isImage, uploading:false };
+        } else {
+          r.lampiran.splice(idx,1);
+          showToast('Gagal mengunggah ' + file.name);
+        }
+      }
+    }catch(e){
+      r.lampiran = r.lampiran.filter(l=>l.id!==tempId);
+      showToast('Gagal mengunggah ' + file.name);
+    }
+    renderRooms();
+  }
+  fileInput.value = '';
+}
+
+function removeLampiran(roomId, lampiranId){
+  const r = rooms.find(x=>x.id===roomId);
+  if(!r) return;
+  r.lampiran = r.lampiran.filter(l=>l.id!==lampiranId);
   renderRooms();
 }
 
@@ -848,10 +1001,39 @@ function renderRooms(){
         <button class="add-row-btn" style="margin-top:0;" onclick="addItemToRoom('${r.id}','Sparepart')">+ Tambah Sparepart</button>
       </div>
       <div class="room-subtotal">Subtotal Ruang: ${fmt(roomSubtotal)}</div>
+
+      <div class="room-items-title" style="margin-top:16px;">📷 Laporan Hasil Pekerjaan (opsional)</div>
+      <div class="field" style="margin-bottom:8px;">
+        <textarea rows="2" placeholder="Catatan hasil pekerjaan di ruang ini, cth: AC sudah dingin normal, kompresor diganti unit baru" onchange="updateRoomField('${r.id}','laporanCatatan',this.value)">${escapeHtml(r.laporanCatatan||'')}</textarea>
+      </div>
+      <div class="lampiran-grid">${lampiranHtml(r)}</div>
+      <label class="upload-btn">
+        📎 Tambah Foto / Dokumen Bukti
+        <input type="file" accept="image/*,.pdf,.doc,.docx" multiple style="display:none;" onchange="handleLampiranUpload('${r.id}', this)">
+      </label>
     `;
     body.appendChild(roomDiv);
   });
   recalc();
+}
+
+function lampiranHtml(r){
+  if(!r.lampiran || r.lampiran.length===0) return '';
+  return r.lampiran.map(l=>{
+    if(l.uploading){
+      return `<div class="lampiran-thumb lampiran-loading"><span>⏳<br>Mengunggah…</span></div>`;
+    }
+    if(l.isImage){
+      return `<div class="lampiran-thumb">
+        <a href="${l.url}" target="_blank"><img src="${l.url}" alt="${escapeHtml(l.name)}"></a>
+        <button class="lampiran-remove" onclick="removeLampiran('${r.id}','${l.id}')">✕</button>
+      </div>`;
+    }
+    return `<div class="lampiran-thumb lampiran-doc">
+      <a href="${l.url}" target="_blank">📄<br><span>${escapeHtml(l.name)}</span></a>
+      <button class="lampiran-remove" onclick="removeLampiran('${r.id}','${l.id}')">✕</button>
+    </div>`;
+  }).join('');
 }
 
 /* ---------- TOTALS (Jasa vs Sparepart terpisah) ---------- */
@@ -1026,6 +1208,11 @@ function buildNotaObject(){
     custAlamat: document.getElementById('custAlamat').value,
     catatan: document.getElementById('catatan').value,
     items: flattenItems(),
+    laporan: rooms.map(r=>({
+      ruang: r.ruang, tanggalKerja: r.tanggalKerja,
+      catatan: r.laporanCatatan || '',
+      lampiran: (r.lampiran||[]).filter(l=>!l.uploading).map(l=>({id:l.id, name:l.name, url:l.url, isImage:l.isImage}))
+    })),
     transKet: document.getElementById('transKet').value,
     transModal: t.transModal,
     transJual: t.transJual,
@@ -1103,6 +1290,16 @@ async function openNota(id){
       groupMap[key].items.push({ ...it, id:'it'+(itemSeq++) });
     });
     if(rooms.length===0) rooms.push({ id:'rm'+(roomSeq++), ruang:'', tanggalKerja: n.tanggal||todayISO(), items:[newItem('Jasa')] });
+    // Cocokkan kembali data laporan (catatan + lampiran) ke ruang yang sesuai
+    (n.laporan||[]).forEach(lap=>{
+      const key = (lap.ruang||'') + '|' + (lap.tanggalKerja||n.tanggal);
+      const room = rooms.find(r => (r.ruang||'') + '|' + (r.tanggalKerja||'') === key);
+      if(room){
+        room.laporanCatatan = lap.catatan || '';
+        room.lampiran = (lap.lampiran||[]).map(l=>({...l}));
+      }
+    });
+    rooms.forEach(r=>{ if(!r.lampiran) r.lampiran = []; if(r.laporanCatatan===undefined) r.laporanCatatan=''; });
     document.getElementById('notaId').value = n.id;
     document.getElementById('notaTanggal').value = n.tanggal;
     document.getElementById('mekanikNama').value = n.mekanik||'';
@@ -1253,15 +1450,20 @@ function renderRekapResult(d){
 
   if(mekanikNames.length===0 && helperNames.length===0){
     resultEl.innerHTML = `<div class="card"><div class="empty-state">Tidak ada pekerjaan pada rentang tanggal ini.</div></div>`;
+    lastRekapData = null;
     return;
   }
+  lastRekapData = d;
 
   const totalMekanikPayout = mekanikNames.reduce((s,n)=> s + d.byMekanik[n].jasaShare + d.byMekanik[n].partShare, 0);
   const totalHelperPayout = helperNames.reduce((s,n)=> s + d.byHelper[n].jasaShare + d.byHelper[n].partShare, 0);
   const totalOwnerPayout = d.ownerJasaShare + d.ownerPartShare;
 
   let html = `<div class="card">
-    <h2><span class="num">Σ</span> Ringkasan Periode ${d.dari} s/d ${d.sampai}</h2>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+      <h2 style="margin:0;"><span class="num">Σ</span> Ringkasan Periode ${d.dari} s/d ${d.sampai}</h2>
+      <button class="btn btn-outline btn-sm" onclick="downloadRekapWord()">⬇️ Unduh Word (.doc)</button>
+    </div>
     <div class="kpi-row">
       <div class="kpi-box"><div class="kpi-label">Total Profit Jasa</div><div class="kpi-value">${fmt(d.totalJasaProfitPeriode)}</div></div>
       <div class="kpi-box"><div class="kpi-label">Total Profit Sparepart</div><div class="kpi-value">${fmt(d.totalPartProfitPeriode)}</div></div>
@@ -1336,6 +1538,167 @@ function renderRekapResult(d){
   html += `</tbody></table></div></div>`;
 
   resultEl.innerHTML = html;
+}
+
+function downloadRekapWord(){
+  const d = lastRekapData;
+  if(!d){ showToast('Belum ada data rekap untuk diunduh'); return; }
+  const mekanikNames = Object.keys(d.byMekanik);
+  const helperNames = Object.keys(d.byHelper);
+  const totalMekanikPayout = mekanikNames.reduce((s,n)=> s + d.byMekanik[n].jasaShare + d.byMekanik[n].partShare, 0);
+  const totalHelperPayout = helperNames.reduce((s,n)=> s + d.byHelper[n].jasaShare + d.byHelper[n].partShare, 0);
+  const totalOwnerPayout = d.ownerJasaShare + d.ownerPartShare;
+
+  let body = `<h1>Coolmax AC Service</h1><div class="sub">Rekap Penggajian &amp; Bagi Hasil — Periode ${d.dari} s/d ${d.sampai}</div>`;
+
+  body += `<h2>Ringkasan</h2><table>
+    <tr><th>Keterangan</th><th class="num">Nominal</th></tr>
+    <tr><td>Total Profit Jasa</td><td class="num">${fmt(d.totalJasaProfitPeriode)}</td></tr>
+    <tr><td>Total Profit Sparepart</td><td class="num">${fmt(d.totalPartProfitPeriode)}</td></tr>
+    <tr class="grand"><td>Total Profit Periode</td><td class="num">${fmt(d.totalJasaProfitPeriode+d.totalPartProfitPeriode)}</td></tr>
+    <tr><td>Total ke Pemilik Usaha</td><td class="num">${fmt(totalOwnerPayout)}</td></tr>
+    <tr><td>Total ke Mekanik</td><td class="num">${fmt(totalMekanikPayout)}</td></tr>
+    <tr><td>Total ke Helper</td><td class="num">${fmt(totalHelperPayout)}</td></tr>
+  </table>`;
+
+  body += `<h2>Porsi Pembagian — Kelompok Jasa</h2><table>
+    <tr><th>Pihak</th><th class="num">Nominal</th><th class="num">Persentase Efektif</th></tr>
+    <tr><td>Pemilik Usaha</td><td class="num">${fmt(d.ownerJasaShare)}</td><td class="num">${pct(d.ownerJasaShare,d.totalJasaProfitPeriode)}%</td></tr>
+    <tr><td>Seluruh Mekanik</td><td class="num">${fmt(mekanikNames.reduce((s,n)=>s+d.byMekanik[n].jasaShare,0))}</td><td class="num">${pct(mekanikNames.reduce((s,n)=>s+d.byMekanik[n].jasaShare,0),d.totalJasaProfitPeriode)}%</td></tr>
+    <tr><td>Seluruh Helper</td><td class="num">${fmt(helperNames.reduce((s,n)=>s+d.byHelper[n].jasaShare,0))}</td><td class="num">${pct(helperNames.reduce((s,n)=>s+d.byHelper[n].jasaShare,0),d.totalJasaProfitPeriode)}%</td></tr>
+  </table>`;
+
+  body += `<h2>Porsi Pembagian — Kelompok Sparepart</h2><table>
+    <tr><th>Pihak</th><th class="num">Nominal</th><th class="num">Persentase Efektif</th></tr>
+    <tr><td>Pemilik Usaha</td><td class="num">${fmt(d.ownerPartShare)}</td><td class="num">${pct(d.ownerPartShare,d.totalPartProfitPeriode)}%</td></tr>
+    <tr><td>Seluruh Mekanik</td><td class="num">${fmt(mekanikNames.reduce((s,n)=>s+d.byMekanik[n].partShare,0))}</td><td class="num">${pct(mekanikNames.reduce((s,n)=>s+d.byMekanik[n].partShare,0),d.totalPartProfitPeriode)}%</td></tr>
+    <tr><td>Seluruh Helper</td><td class="num">${fmt(helperNames.reduce((s,n)=>s+d.byHelper[n].partShare,0))}</td><td class="num">${pct(helperNames.reduce((s,n)=>s+d.byHelper[n].partShare,0),d.totalPartProfitPeriode)}%</td></tr>
+  </table>`;
+
+  body += `<h2>Rekap Penggajian Mekanik</h2><table>
+    <tr><th>Nama</th><th class="num">Jml Pekerjaan</th><th class="num">Bagian Jasa</th><th class="num">Bagian Sparepart</th><th class="num">Total Diterima</th></tr>`;
+  mekanikNames.forEach(nama=>{
+    const r = d.byMekanik[nama];
+    body += `<tr><td>${escapeHtml(nama)}</td><td class="num">${r.jumlahItem}</td><td class="num">${fmt(r.jasaShare)}</td><td class="num">${fmt(r.partShare)}</td><td class="num">${fmt(r.jasaShare+r.partShare)}</td></tr>`;
+  });
+  if(mekanikNames.length===0) body += `<tr><td colspan="5">Tidak ada data.</td></tr>`;
+  body += `</table>`;
+
+  body += `<h2>Rekap Penggajian Helper</h2><table>
+    <tr><th>Nama</th><th class="num">Bagian Jasa</th><th class="num">Bagian Sparepart</th><th class="num">Total Diterima</th></tr>`;
+  helperNames.forEach(nama=>{
+    const r = d.byHelper[nama];
+    body += `<tr><td>${escapeHtml(nama)}</td><td class="num">${fmt(r.jasaShare)}</td><td class="num">${fmt(r.partShare)}</td><td class="num">${fmt(r.jasaShare+r.partShare)}</td></tr>`;
+  });
+  if(helperNames.length===0) body += `<tr><td colspan="4">Tidak ada data.</td></tr>`;
+  body += `</table>`;
+
+  body += `<h2>Detail Per Ruang / Pekerjaan</h2><table>
+    <tr><th>Tanggal</th><th>Ruang/Lokasi</th><th>No. Nota</th><th>Pelanggan</th><th>Jenis</th><th>Deskripsi</th>
+    <th class="num">Profit</th><th class="num">Bag. Owner</th><th>Mekanik</th><th class="num">Bag. Mekanik</th><th>Helper</th><th class="num">Bag. Helper</th></tr>`;
+  d.detailRows.forEach(r=>{
+    body += `<tr>
+      <td>${r.tanggal}</td><td>${escapeHtml(r.ruang)}</td><td>${r.notaId}</td><td>${escapeHtml(r.cust||'')}</td>
+      <td>${r.jenis}</td><td>${escapeHtml(r.desc||'')}</td>
+      <td class="num">${fmt(r.profit)}</td><td class="num">${fmt(r.ownShare)}</td>
+      <td>${escapeHtml(r.mekanik)}</td><td class="num">${fmt(r.mekShare)}</td>
+      <td>${escapeHtml(r.helper||'-')}</td><td class="num">${r.helper?fmt(r.helpShare):'-'}</td>
+    </tr>`;
+  });
+  body += `</table>`;
+
+  downloadWordDoc('Rekap Penggajian', body, `Rekap-Penggajian_${d.dari}_${d.sampai}.doc`);
+}
+  const dari = document.getElementById('laporanDari').value;
+  const sampai = document.getElementById('laporanSampai').value;
+  const cari = document.getElementById('laporanCari').value.trim().toLowerCase();
+  const resultEl = document.getElementById('laporanResult');
+  if(!dari || !sampai){ showToast('Isi Dari Tanggal dan Sampai Tanggal dulu'); return; }
+  resultEl.innerHTML = `<div class="card"><div class="muted">Memuat laporan dari spreadsheet…</div></div>`;
+
+  let notaList = [];
+  try{
+    const res = await apiGet('getAllNotaFull');
+    if(Array.isArray(res)) notaList = res;
+  }catch(e){ resultEl.innerHTML = `<div class="card"><div class="muted">Gagal memuat data.</div></div>`; return; }
+
+  const entries = [];
+  notaList.forEach(nota=>{
+    (nota.laporan||[]).forEach(lap=>{
+      const tgl = lap.tanggalKerja || nota.tanggal;
+      if(!tgl || tgl < dari || tgl > sampai) return;
+      const hasContent = (lap.catatan && lap.catatan.trim()) || (lap.lampiran && lap.lampiran.length);
+      if(!hasContent) return;
+      const haystack = [lap.ruang, nota.custNama, nota.mekanik, nota.helper].join(' ').toLowerCase();
+      if(cari && haystack.indexOf(cari) === -1) return;
+      entries.push({ tanggal: tgl, notaId: nota.id, cust: nota.custNama, mekanik: nota.mekanik, helper: nota.helper, ...lap });
+    });
+  });
+  entries.sort((a,b)=> a.tanggal < b.tanggal ? 1 : (a.tanggal>b.tanggal?-1:0)); // terbaru dulu
+
+  renderLaporanResult(entries, dari, sampai);
+}
+
+function renderLaporanResult(entries, dari, sampai){
+  const resultEl = document.getElementById('laporanResult');
+  if(entries.length===0){
+    resultEl.innerHTML = `<div class="card"><div class="empty-state">Belum ada laporan hasil pekerjaan (catatan/foto/dokumen) pada rentang ini.</div></div>`;
+    lastLaporanData = null;
+    return;
+  }
+  lastLaporanData = {entries, dari, sampai};
+  let html = `<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+      <h2 style="margin:0;"><span class="num">${entries.length}</span> Laporan Ditemukan (${dari} s/d ${sampai})</h2>
+      <button class="btn btn-outline btn-sm" onclick="downloadLaporanWord()">⬇️ Unduh Word (.doc)</button>
+    </div>
+  </div>`;
+  entries.forEach(e=>{
+    const fotos = (e.lampiran||[]).filter(l=>l.isImage);
+    const docs = (e.lampiran||[]).filter(l=>!l.isImage);
+    html += `<div class="laporan-card">
+      <div class="laporan-card-head">
+        <div>
+          <div class="ltitle">📍 ${escapeHtml(e.ruang||'(tanpa nama ruang)')}</div>
+          <div class="lmeta">${e.tanggal} · Nota ${e.notaId} · ${escapeHtml(e.cust||'-')}</div>
+          <div class="lmeta">Mekanik: ${escapeHtml(e.mekanik||'-')}${e.helper?(' · Helper: '+escapeHtml(e.helper)):''}</div>
+        </div>
+      </div>
+      ${e.catatan ? `<div class="laporan-catatan">${escapeHtml(e.catatan)}</div>` : ''}
+      ${fotos.length ? `<div class="lampiran-grid">${fotos.map(f=>`<div class="lampiran-thumb"><a href="${f.url}" target="_blank"><img src="${f.url}" alt="${escapeHtml(f.name)}"></a></div>`).join('')}</div>` : ''}
+      ${docs.length ? `<div class="lampiran-grid">${docs.map(d=>`<div class="lampiran-thumb lampiran-doc"><a href="${d.url}" target="_blank">📄<br><span>${escapeHtml(d.name)}</span></a></div>`).join('')}</div>` : ''}
+    </div>`;
+  });
+  resultEl.innerHTML = html;
+}
+
+function downloadLaporanWord(){
+  const d = lastLaporanData;
+  if(!d || !d.entries || d.entries.length===0){ showToast('Belum ada data laporan untuk diunduh'); return; }
+
+  let body = `<h1>Coolmax AC Service</h1><div class="sub">Laporan Hasil Pekerjaan — Periode ${d.dari} s/d ${d.sampai}</div>`;
+  body += `<table>
+    <tr><th>Tanggal</th><th>Ruang/Lokasi</th><th>No. Nota</th><th>Pelanggan</th><th>Mekanik</th><th>Helper</th><th>Catatan</th><th>Foto Bukti</th><th>Dokumen</th></tr>`;
+  d.entries.forEach(e=>{
+    const fotos = (e.lampiran||[]).filter(l=>l.isImage);
+    const docs = (e.lampiran||[]).filter(l=>!l.isImage);
+    const fotoCell = fotos.length
+      ? fotos.map(f=>`<img src="${f.url}" style="width:140px;margin:2px;">`).join('')
+      : '-';
+    const docCell = docs.length
+      ? docs.map(dd=>`<a href="${dd.url}">${escapeHtml(dd.name)}</a>`).join('<br>')
+      : '-';
+    body += `<tr>
+      <td>${e.tanggal}</td><td>${escapeHtml(e.ruang||'-')}</td><td>${e.notaId}</td><td>${escapeHtml(e.cust||'-')}</td>
+      <td>${escapeHtml(e.mekanik||'-')}</td><td>${escapeHtml(e.helper||'-')}</td>
+      <td>${escapeHtml(e.catatan||'-')}</td>
+      <td>${fotoCell}</td><td>${docCell}</td>
+    </tr>`;
+  });
+  body += `</table>
+  <div class="sub" style="margin-top:10pt;">Catatan: foto bukti pada dokumen ini diambil langsung dari tautan Google Drive. Jika foto tidak tampil saat dibuka, pastikan komputer terhubung internet, atau aktifkan "Enable remote content"/"Aktifkan unduhan gambar" di Word saat diminta.</div>`;
+
+  downloadWordDoc('Laporan Hasil Pekerjaan', body, `Laporan-Pekerjaan_${d.dari}_${d.sampai}.doc`);
 }
 
 /* ---------- PRINT ---------- */
@@ -1486,6 +1849,8 @@ function printInternal(){
   const today = todayISO();
   document.getElementById('rekapDari').value = today.slice(0,8) + '01';
   document.getElementById('rekapSampai').value = today;
+  document.getElementById('laporanDari').value = today.slice(0,8) + '01';
+  document.getElementById('laporanSampai').value = today;
 })();
 </script>
 </body>
