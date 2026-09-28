@@ -310,6 +310,7 @@
     <button class="tab-btn" data-tab="riwayat" onclick="switchTab('riwayat')">Riwayat Nota</button>
     <button class="tab-btn" data-tab="master" onclick="switchTab('master')">Master Jasa &amp; Sparepart</button>
     <button class="tab-btn" data-tab="rekap" onclick="switchTab('rekap')">Rekap Penggajian</button>
+    <button class="tab-btn" data-tab="bagihasil" onclick="switchTab('bagihasil')">Bagi Hasil Per Pihak</button>
     <button class="tab-btn" data-tab="laporan" onclick="switchTab('laporan')">Laporan Pekerjaan</button>
     <button class="tab-btn" data-tab="pengaturan" onclick="switchTab('pengaturan')">Pengaturan Bagi Hasil</button>
   </div>
@@ -500,6 +501,35 @@
     <div id="rekapResult"></div>
   </div>
 
+  <!-- TAB: BAGI HASIL PER PIHAK -->
+  <div id="tab-bagihasil" style="display:none;">
+    <div class="card">
+      <h2><span class="num">👥</span> Filter Bagi Hasil Per Pihak</h2>
+      <p class="hint">Menampilkan bagian hasil secara terpisah untuk <strong>Pemilik Usaha</strong>, tiap <strong>Mekanik</strong>, dan tiap <strong>Helper</strong> — memudahkan saat membayarkan ke masing-masing pihak.</p>
+      <div class="grid3">
+        <div class="field">
+          <label>Dari Tanggal</label>
+          <input type="date" id="bhDari">
+        </div>
+        <div class="field">
+          <label>Sampai Tanggal</label>
+          <input type="date" id="bhSampai">
+        </div>
+        <div class="field">
+          <label>Tampilkan Pihak</label>
+          <select id="bhPihak">
+            <option value="semua">Semua Pihak</option>
+            <option value="owner">Pemilik Usaha saja</option>
+            <option value="mekanik">Mekanik saja</option>
+            <option value="helper">Helper saja</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="loadBagiHasil()">🔍 Tampilkan Bagi Hasil</button>
+    </div>
+    <div id="bagiHasilResult"></div>
+  </div>
+
   <!-- TAB: LAPORAN PEKERJAAN (galeri foto/dokumen bukti) -->
   <div id="tab-laporan" style="display:none;">
     <div class="card">
@@ -578,6 +608,7 @@ async function apiPost(action, payload){
 let rooms = []; // [{id, ruang, tanggalKerja, items:[{id, masterId, jenis, desc, qty, modal, jual}]}]
 let lastRekapData = null;
 let lastLaporanData = null;
+let lastBagiHasilData = null;
 let roomSeq = 0;
 let itemSeq = 0;
 let currentSplitJasa = { owner: 40, mekanik: 40, helper: 20 };
@@ -626,7 +657,7 @@ function showToast(msg){
 }
 
 function switchTab(name){
-  ['buat','riwayat','master','rekap','laporan','pengaturan'].forEach(t=>{
+  ['buat','riwayat','master','rekap','bagihasil','laporan','pengaturan'].forEach(t=>{
     document.getElementById('tab-'+t).style.display = (t===name)?'block':'none';
   });
   document.querySelectorAll('.tab-btn').forEach(b=>{
@@ -1345,19 +1376,12 @@ function splitOf(nota){
   return {jasa:{owner:40,mekanik:40,helper:20}, part:{owner:70,mekanik:20,helper:10}};
 }
 
-async function loadRekap(){
-  const dari = document.getElementById('rekapDari').value;
-  const sampai = document.getElementById('rekapSampai').value;
-  const mekanikFilter = document.getElementById('rekapMekanikFilter').value.trim().toLowerCase();
-  const resultEl = document.getElementById('rekapResult');
-  if(!dari || !sampai){ showToast('Isi Dari Tanggal dan Sampai Tanggal dulu'); return; }
-  resultEl.innerHTML = `<div class="card"><div class="muted">Memuat data dari spreadsheet…</div></div>`;
-
+async function computeRekapData(dari, sampai, mekanikFilter){
   let notaList = [];
   try{
     const res = await apiGet('getAllNotaFull');
     if(Array.isArray(res)) notaList = res;
-  }catch(e){ resultEl.innerHTML = `<div class="card"><div class="muted">Gagal memuat data.</div></div>`; return; }
+  }catch(e){ return null; }
 
   const byMekanik = {}; // nama -> {jasaProfit, jasaShare, partProfit, partShare, jumlahItem}
   const byHelper = {};
@@ -1435,7 +1459,21 @@ async function loadRekap(){
 
   detailRows.sort((a,b)=> a.tanggal < b.tanggal ? -1 : (a.tanggal>b.tanggal?1:0));
 
-  renderRekapResult({byMekanik, byHelper, totalJasaProfitPeriode, totalPartProfitPeriode, ownerJasaShare, ownerPartShare, detailRows, dari, sampai});
+  return {byMekanik, byHelper, totalJasaProfitPeriode, totalPartProfitPeriode, ownerJasaShare, ownerPartShare, detailRows, dari, sampai};
+}
+
+async function loadRekap(){
+  const dari = document.getElementById('rekapDari').value;
+  const sampai = document.getElementById('rekapSampai').value;
+  const mekanikFilter = document.getElementById('rekapMekanikFilter').value.trim().toLowerCase();
+  const resultEl = document.getElementById('rekapResult');
+  if(!dari || !sampai){ showToast('Isi Dari Tanggal dan Sampai Tanggal dulu'); return; }
+  resultEl.innerHTML = `<div class="card"><div class="muted">Memuat data dari spreadsheet…</div></div>`;
+
+  const d = await computeRekapData(dari, sampai, mekanikFilter);
+  if(!d){ resultEl.innerHTML = `<div class="card"><div class="muted">Gagal memuat data.</div></div>`; return; }
+
+  renderRekapResult(d);
 }
 
 function pct(part, total){
@@ -1608,6 +1646,212 @@ function downloadRekapWord(){
   body += `</table>`;
 
   downloadWordDoc('Rekap Penggajian', body, `Rekap-Penggajian_${d.dari}_${d.sampai}.doc`);
+}
+
+/* ---------- BAGI HASIL PER PIHAK (Pemilik Usaha / Mekanik / Helper terpisah) ---------- */
+
+async function loadBagiHasil(){
+  const dari = document.getElementById('bhDari').value;
+  const sampai = document.getElementById('bhSampai').value;
+  const pihakFilter = document.getElementById('bhPihak').value;
+  const resultEl = document.getElementById('bagiHasilResult');
+  if(!dari || !sampai){ showToast('Isi Dari Tanggal dan Sampai Tanggal dulu'); return; }
+  resultEl.innerHTML = `<div class="card"><div class="muted">Memuat data dari spreadsheet…</div></div>`;
+
+  const d = await computeRekapData(dari, sampai, '');
+  if(!d){ resultEl.innerHTML = `<div class="card"><div class="muted">Gagal memuat data.</div></div>`; return; }
+
+  lastBagiHasilData = d;
+  renderBagiHasil(d, pihakFilter);
+}
+
+function renderBagiHasil(d, pihakFilter){
+  const resultEl = document.getElementById('bagiHasilResult');
+  const mekanikNames = Object.keys(d.byMekanik);
+  const helperNames = Object.keys(d.byHelper);
+  const ownerTotal = d.ownerJasaShare + d.ownerPartShare;
+  const totalMekanikPayout = mekanikNames.reduce((s,n)=> s + d.byMekanik[n].jasaShare + d.byMekanik[n].partShare, 0);
+  const totalHelperPayout = helperNames.reduce((s,n)=> s + d.byHelper[n].jasaShare + d.byHelper[n].partShare, 0);
+
+  if(mekanikNames.length===0 && helperNames.length===0 && !ownerTotal){
+    resultEl.innerHTML = `<div class="card"><div class="empty-state">Tidak ada pekerjaan pada rentang tanggal ini.</div></div>`;
+    return;
+  }
+
+  let html = `<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+      <h2 style="margin:0;"><span class="num">Σ</span> Periode ${d.dari} s/d ${d.sampai}</h2>
+      <button class="btn btn-outline btn-sm" onclick="downloadBagiHasilWord()">⬇️ Unduh Word (Semua Pihak)</button>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-box"><div class="kpi-label">Pemilik Usaha</div><div class="kpi-value">${fmt(ownerTotal)}</div></div>
+      <div class="kpi-box"><div class="kpi-label">Seluruh Mekanik</div><div class="kpi-value">${fmt(totalMekanikPayout)}</div></div>
+      <div class="kpi-box"><div class="kpi-label">Seluruh Helper</div><div class="kpi-value">${fmt(totalHelperPayout)}</div></div>
+      <div class="kpi-box"><div class="kpi-label">Total Profit Periode</div><div class="kpi-value">${fmt(d.totalJasaProfitPeriode+d.totalPartProfitPeriode)}</div></div>
+    </div>
+  </div>`;
+
+  if(pihakFilter==='semua' || pihakFilter==='owner'){
+    html += `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+        <h2 style="margin:0;"><span class="num">🏢</span> Pemilik Usaha</h2>
+        <button class="btn btn-outline btn-sm" onclick="printSlipPihak('owner','')">🖨️ Cetak Slip</button>
+      </div>
+      <div class="recap-summary-card" style="background:#fff;">
+        <div class="rline"><span class="muted">Bagian dari Jasa</span><span class="mono">${fmt(d.ownerJasaShare)}</span></div>
+        <div class="rline"><span class="muted">Bagian dari Sparepart</span><span class="mono">${fmt(d.ownerPartShare)}</span></div>
+        <div class="rline grand"><span>Total Diterima</span><span class="mono">${fmt(ownerTotal)}</span></div>
+      </div>
+    </div>`;
+  }
+
+  if(pihakFilter==='semua' || pihakFilter==='mekanik'){
+    html += `<div class="card"><h2><span class="num">👷</span> Mekanik</h2>`;
+    if(mekanikNames.length===0){
+      html += `<div class="empty-state">Tidak ada data mekanik pada periode ini.</div>`;
+    } else {
+      mekanikNames.forEach(nama=>{
+        const r = d.byMekanik[nama];
+        const total = r.jasaShare + r.partShare;
+        html += `<div class="recap-summary-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+            <div class="rname">${escapeHtml(nama)} <span class="muted" style="font-weight:400;font-size:12px;">(${r.jumlahItem} pekerjaan)</span></div>
+            <button class="btn btn-outline btn-sm" onclick="printSlipPihak('mekanik', decodeURIComponent('${encodeURIComponent(nama)}'))">🖨️ Cetak Slip</button>
+          </div>
+          <div class="rline"><span class="muted">Bagian dari Jasa</span><span class="mono">${fmt(r.jasaShare)}</span></div>
+          <div class="rline"><span class="muted">Bagian dari Sparepart</span><span class="mono">${fmt(r.partShare)}</span></div>
+          <div class="rline grand"><span>Total Diterima</span><span class="mono">${fmt(total)}</span></div>
+        </div>`;
+      });
+    }
+    html += `</div>`;
+  }
+
+  if(pihakFilter==='semua' || pihakFilter==='helper'){
+    html += `<div class="card"><h2><span class="num">🧰</span> Helper</h2>`;
+    if(helperNames.length===0){
+      html += `<div class="empty-state">Tidak ada data helper pada periode ini.</div>`;
+    } else {
+      helperNames.forEach(nama=>{
+        const r = d.byHelper[nama];
+        const total = r.jasaShare + r.partShare;
+        html += `<div class="recap-summary-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+            <div class="rname">${escapeHtml(nama)}</div>
+            <button class="btn btn-outline btn-sm" onclick="printSlipPihak('helper', decodeURIComponent('${encodeURIComponent(nama)}'))">🖨️ Cetak Slip</button>
+          </div>
+          <div class="rline"><span class="muted">Bagian dari Jasa</span><span class="mono">${fmt(r.jasaShare)}</span></div>
+          <div class="rline"><span class="muted">Bagian dari Sparepart</span><span class="mono">${fmt(r.partShare)}</span></div>
+          <div class="rline grand"><span>Total Diterima</span><span class="mono">${fmt(total)}</span></div>
+        </div>`;
+      });
+    }
+    html += `</div>`;
+  }
+
+  resultEl.innerHTML = html;
+}
+
+function printSlipPihak(kind, nama){
+  const d = lastBagiHasilData;
+  if(!d){ showToast('Data belum dimuat'); return; }
+  let subjectLabel, jasaShare, partShare, rows, signLabel;
+  if(kind==='owner'){
+    subjectLabel = 'Pemilik Usaha'; signLabel = 'Pemilik Usaha';
+    jasaShare = d.ownerJasaShare; partShare = d.ownerPartShare;
+    rows = d.detailRows;
+  } else if(kind==='mekanik'){
+    const r = d.byMekanik[nama];
+    if(!r){ showToast('Data tidak ditemukan'); return; }
+    subjectLabel = 'Mekanik — ' + nama; signLabel = nama;
+    jasaShare = r.jasaShare; partShare = r.partShare;
+    rows = d.detailRows.filter(x=>x.mekanik===nama);
+  } else {
+    const r = d.byHelper[nama];
+    if(!r){ showToast('Data tidak ditemukan'); return; }
+    subjectLabel = 'Helper — ' + nama; signLabel = nama;
+    jasaShare = r.jasaShare; partShare = r.partShare;
+    rows = d.detailRows.filter(x=>x.helper===nama);
+  }
+  const totalShare = jasaShare + partShare;
+
+  const rowsHtml = rows.map(r=>{
+    const shareForThis = kind==='owner' ? r.ownShare : (kind==='mekanik' ? r.mekShare : r.helpShare);
+    return `<tr>
+      <td>${r.tanggal}</td><td>${escapeHtml(r.ruang)}</td><td>${r.notaId}</td>
+      <td>${r.jenis}</td><td>${escapeHtml(r.desc||'')}</td>
+      <td style="text-align:right;">${fmt(r.profit)}</td>
+      <td style="text-align:right;">${fmt(shareForThis)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('printArea').innerHTML = `
+    <div class="nota-print">
+      <div class="nota-head" style="background:var(--teal-deep);">
+        <div>
+          <h1>Slip Bagi Hasil</h1>
+          <div class="sub">Coolmax AC Service — ${escapeHtml(subjectLabel)}</div>
+        </div>
+        <div style="text-align:right;font-size:12px;">
+          <div>Periode</div>
+          <div style="font-weight:700;">${d.dari} s/d ${d.sampai}</div>
+        </div>
+      </div>
+      <div class="nota-body">
+        <table class="print-table">
+          <thead><tr><th>Tgl</th><th>Ruang</th><th>Nota</th><th>Jenis</th><th>Deskripsi</th><th style="text-align:right;">Profit</th><th style="text-align:right;">Bagian</th></tr></thead>
+          <tbody>${rowsHtml || '<tr><td colspan="7" style="text-align:center;">Tidak ada pekerjaan pada periode ini.</td></tr>'}</tbody>
+        </table>
+        <div class="print-total-box">
+          <div class="line"><span>Bagian dari Jasa</span><span>${fmt(jasaShare)}</span></div>
+          <div class="line"><span>Bagian dari Sparepart</span><span>${fmt(partShare)}</span></div>
+          <div class="line grand"><span>Total Diterima</span><span>${fmt(totalShare)}</span></div>
+        </div>
+        <div class="print-footer">
+          <div class="sign-box"><div class="sign-line">Pemilik Usaha</div></div>
+          <div class="sign-box"><div class="sign-line">${escapeHtml(signLabel)}</div></div>
+        </div>
+      </div>
+    </div>
+  `;
+  window.print();
+}
+
+function downloadBagiHasilWord(){
+  const d = lastBagiHasilData;
+  if(!d){ showToast('Belum ada data untuk diunduh'); return; }
+  const mekanikNames = Object.keys(d.byMekanik);
+  const helperNames = Object.keys(d.byHelper);
+  const ownerTotal = d.ownerJasaShare + d.ownerPartShare;
+
+  let body = `<h1>Coolmax AC Service</h1><div class="sub">Bagi Hasil Per Pihak — Periode ${d.dari} s/d ${d.sampai}</div>`;
+
+  body += `<h2>Pemilik Usaha</h2><table>
+    <tr><th>Keterangan</th><th class="num">Nominal</th></tr>
+    <tr><td>Bagian dari Jasa</td><td class="num">${fmt(d.ownerJasaShare)}</td></tr>
+    <tr><td>Bagian dari Sparepart</td><td class="num">${fmt(d.ownerPartShare)}</td></tr>
+    <tr class="grand"><td>Total Diterima</td><td class="num">${fmt(ownerTotal)}</td></tr>
+  </table>`;
+
+  body += `<h2>Mekanik</h2><table>
+    <tr><th>Nama</th><th class="num">Jml Pekerjaan</th><th class="num">Bagian Jasa</th><th class="num">Bagian Sparepart</th><th class="num">Total Diterima</th></tr>`;
+  mekanikNames.forEach(nama=>{
+    const r = d.byMekanik[nama];
+    body += `<tr><td>${escapeHtml(nama)}</td><td class="num">${r.jumlahItem}</td><td class="num">${fmt(r.jasaShare)}</td><td class="num">${fmt(r.partShare)}</td><td class="num">${fmt(r.jasaShare+r.partShare)}</td></tr>`;
+  });
+  if(mekanikNames.length===0) body += `<tr><td colspan="5">Tidak ada data.</td></tr>`;
+  body += `</table>`;
+
+  body += `<h2>Helper</h2><table>
+    <tr><th>Nama</th><th class="num">Bagian Jasa</th><th class="num">Bagian Sparepart</th><th class="num">Total Diterima</th></tr>`;
+  helperNames.forEach(nama=>{
+    const r = d.byHelper[nama];
+    body += `<tr><td>${escapeHtml(nama)}</td><td class="num">${fmt(r.jasaShare)}</td><td class="num">${fmt(r.partShare)}</td><td class="num">${fmt(r.jasaShare+r.partShare)}</td></tr>`;
+  });
+  if(helperNames.length===0) body += `<tr><td colspan="4">Tidak ada data.</td></tr>`;
+  body += `</table>`;
+
+  downloadWordDoc('Bagi Hasil Per Pihak', body, `Bagi-Hasil_${d.dari}_${d.sampai}.doc`);
 }
 
 /* ---------- LAPORAN HASIL PEKERJAAN (galeri foto/dokumen) ---------- */
@@ -1853,6 +2097,8 @@ function printInternal(){
   const today = todayISO();
   document.getElementById('rekapDari').value = today.slice(0,8) + '01';
   document.getElementById('rekapSampai').value = today;
+  document.getElementById('bhDari').value = today.slice(0,8) + '01';
+  document.getElementById('bhSampai').value = today;
   document.getElementById('laporanDari').value = today.slice(0,8) + '01';
   document.getElementById('laporanSampai').value = today;
 })();
