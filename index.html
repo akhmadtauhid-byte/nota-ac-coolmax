@@ -1780,7 +1780,6 @@ function printSlipPihak(kind, nama){
     return `<tr>
       <td>${r.tanggal}</td><td>${escapeHtml(r.ruang)}</td><td>${r.notaId}</td>
       <td>${r.jenis}</td><td>${escapeHtml(r.desc||'')}</td>
-      <td style="text-align:right;">${fmt(r.profit)}</td>
       <td style="text-align:right;">${fmt(shareForThis)}</td>
     </tr>`;
   }).join('');
@@ -1799,8 +1798,8 @@ function printSlipPihak(kind, nama){
       </div>
       <div class="nota-body">
         <table class="print-table">
-          <thead><tr><th>Tgl</th><th>Ruang</th><th>Nota</th><th>Jenis</th><th>Deskripsi</th><th style="text-align:right;">Profit</th><th style="text-align:right;">Bagian</th></tr></thead>
-          <tbody>${rowsHtml || '<tr><td colspan="7" style="text-align:center;">Tidak ada pekerjaan pada periode ini.</td></tr>'}</tbody>
+          <thead><tr><th>Tgl</th><th>Ruang</th><th>Nota</th><th>Jenis</th><th>Deskripsi</th><th style="text-align:right;">Bagian</th></tr></thead>
+          <tbody>${rowsHtml || '<tr><td colspan="6" style="text-align:center;">Tidak ada pekerjaan pada periode ini.</td></tr>'}</tbody>
         </table>
         <div class="print-total-box">
           <div class="line"><span>Bagian dari Jasa</span><span>${fmt(jasaShare)}</span></div>
